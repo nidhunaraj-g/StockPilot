@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace StockPilot.Domain.Entities
 {
-    public class Category : BaseEntity
+    public class Category : AuditableEntity
     {
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }

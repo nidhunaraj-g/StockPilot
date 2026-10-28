@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StockPilot.Application.Common.Interfaces;
 using StockPilot.Infrastructure.Persistence;
+using StockPilot.Infrastructure.Persistence.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +25,7 @@ namespace StockPilot.Infrastructure
 
             services.AddDbContext<StockPilotDbContext>(options =>
                 options.UseSqlServer(connectionString));
+            services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<>));
 
             return services;
         }

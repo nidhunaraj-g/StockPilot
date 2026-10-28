@@ -125,7 +125,7 @@ namespace StockPilot.Infrastructure.Persistence.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ProductImages_ProductId_SortOrder",
                 table: "ProductImages",
-                columns: new[] { "ProductId", "SortOrder" });
+                columns: ["ProductId", "SortOrder"]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_Barcode",
