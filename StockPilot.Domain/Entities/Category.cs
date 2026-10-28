@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace StockPilot.Domain.Entities
 {
-    internal class Category
+    public class Category : BaseEntity
     {
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+
+        // Navigation property
+        public ICollection<Product> Products { get; set; }
+            = [];
     }
 }

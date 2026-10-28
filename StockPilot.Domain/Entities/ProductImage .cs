@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace StockPilot.Domain.Entities
 {
-    internal class ProductImage
+    public class ProductImage : BaseEntity
     {
+        public int ProductId { get; set; }
+        public string ImageUrl { get; set; } = string.Empty;
+        public string? AltText { get; set; }
+        public bool IsPrimary { get; set; }
+        public int SortOrder { get; set; }
+        public Product Product { get; set; } = null!;
     }
 }

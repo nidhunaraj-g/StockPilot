@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace StockPilot.Domain.Entities
 {
-    internal class Brand
+    public class Brand : AuditableEntity
     {
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? LogoUrl { get; set; }
+        public ICollection<Product> Products { get; set; }
+            = [];
     }
 }

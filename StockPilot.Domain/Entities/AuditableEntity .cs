@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace StockPilot.Domain.Entities
 {
-    internal class AuditableEntity
+    public abstract class AuditableEntity : BaseEntity
     {
+        public bool IsActive { get; set; } = true;
     }
 }
