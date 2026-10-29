@@ -18,4 +18,8 @@
     <ProjectReference Include="..\StockPilot.Domain\StockPilot.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Stocks\Validator\" />
+  </ItemGroup>
+
 </Project>

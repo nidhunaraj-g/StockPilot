@@ -16,6 +16,7 @@ namespace StockPilot.Domain.Entities
         public int? BrandId { get; set; }
         public decimal CostPrice { get; set; }
         public decimal SellingPrice { get; set; }
+        public int StockQuantity { get; set; } = 0;
         public int MinimumStockLevel { get; set; }
         public byte[] RowVersion { get; set; } = [];
         public Category Category { get; set; } = null!;

@@ -44,17 +44,30 @@ namespace StockPilot.Infrastructure.Persistence.Configuration
             builder.Property(p => p.SellingPrice)
                 .HasPrecision(18, 2);
 
-            builder.ToTable(t => t.HasCheckConstraint(
-                "CK_Products_CostPrice",
-                "[CostPrice] >= 0"));
+            // Stock quantity configuration
+            builder.Property(p => p.StockQuantity)
+                .IsRequired()
+                .HasDefaultValue(0);
 
-            builder.ToTable(t => t.HasCheckConstraint(
-                "CK_Products_SellingPrice",
-                "[SellingPrice] >= 0"));
+            // Database check constraints
+            builder.ToTable(t =>
+            {
+                t.HasCheckConstraint(
+                    "CK_Products_CostPrice",
+                    "[CostPrice] >= 0");
 
-            builder.ToTable(t => t.HasCheckConstraint(
-                "CK_Products_MinimumStockLevel",
-                "[MinimumStockLevel] >= 0"));
+                t.HasCheckConstraint(
+                    "CK_Products_SellingPrice",
+                    "[SellingPrice] >= 0");
+
+                t.HasCheckConstraint(
+                    "CK_Products_MinimumStockLevel",
+                    "[MinimumStockLevel] >= 0");
+
+                t.HasCheckConstraint(
+                    "CK_Products_StockQuantity",
+                    "[StockQuantity] >= 0");
+            });
 
             builder.Property(p => p.RowVersion)
                 .IsRowVersion();

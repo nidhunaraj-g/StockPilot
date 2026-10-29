@@ -149,6 +149,11 @@ namespace StockPilot.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("StockQuantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -172,6 +177,8 @@ namespace StockPilot.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_Products_MinimumStockLevel", "[MinimumStockLevel] >= 0");
 
                             t.HasCheckConstraint("CK_Products_SellingPrice", "[SellingPrice] >= 0");
+
+                            t.HasCheckConstraint("CK_Products_StockQuantity", "[StockQuantity] >= 0");
                         });
                 });
 
@@ -214,6 +221,42 @@ namespace StockPilot.Infrastructure.Persistence.Migrations
                     b.ToTable("ProductImages", (string)null);
                 });
 
+            modelBuilder.Entity("StockPilot.Domain.Entities.StockMovement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MovementType")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "CreatedAtUtc");
+
+                    b.ToTable("StockMovements");
+                });
+
             modelBuilder.Entity("StockPilot.Domain.Entities.Product", b =>
                 {
                     b.HasOne("StockPilot.Domain.Entities.Brand", "Brand")
@@ -238,6 +281,17 @@ namespace StockPilot.Infrastructure.Persistence.Migrations
                         .WithMany("Images")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("StockPilot.Domain.Entities.StockMovement", b =>
+                {
+                    b.HasOne("StockPilot.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Product");
