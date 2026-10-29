@@ -61,5 +61,25 @@ namespace StockPilot.Infrastructure.Persistence.Repositories
                 predicate,
                 cancellationToken);
         }
+
+
+        public async Task<List<TEntity>> GetAllWithIncludesAsync(
+            CancellationToken cancellationToken = default,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            IQueryable<TEntity> query = DbSet.AsNoTracking();
+
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            return await query.ToListAsync(cancellationToken);
+        }
+        public IQueryable<TEntity> GetQueryable()
+        {
+            return DbSet.AsNoTracking();
+        }
+
     }
 }
