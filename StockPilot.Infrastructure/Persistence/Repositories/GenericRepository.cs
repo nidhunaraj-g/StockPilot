@@ -1,20 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using StockPilot.Application.Common.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StockPilot.Infrastructure.Persistence.Repositories
 {
-    public class GenericRepository<TEntity>(StockPilotDbContext context) : IGenericRepository<TEntity> where TEntity : class
+    public class GenericRepository<TEntity>(
+        StockPilotDbContext context)
+        : IGenericRepository<TEntity> where TEntity : class
     {
         protected readonly StockPilotDbContext Context = context;
 
-        protected readonly DbSet<TEntity> DbSet =
-            context.Set<TEntity>();
+        protected readonly DbSet<TEntity> DbSet = context.Set<TEntity>();
 
         public async Task<TEntity?> GetByIdAsync(
             int id,
@@ -55,14 +52,17 @@ namespace StockPilot.Infrastructure.Persistence.Repositories
         {
             return await Context.SaveChangesAsync(cancellationToken) > 0;
         }
-        public async Task<TEntity?> FindFirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate,CancellationToken cancellationToken = default)
+
+        public async Task<TEntity?> FindFirstOrDefaultAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            CancellationToken cancellationToken = default)
         {
             return await DbSet.FirstOrDefaultAsync(
                 predicate,
                 cancellationToken);
         }
 
-
+        // Existing method: no tracking.
         public async Task<List<TEntity>> GetAllWithIncludesAsync(
             CancellationToken cancellationToken = default,
             params Expression<Func<TEntity, object>>[] includes)
@@ -76,10 +76,25 @@ namespace StockPilot.Infrastructure.Persistence.Repositories
 
             return await query.ToListAsync(cancellationToken);
         }
+
+        // New method: tracking enabled.
+        public async Task<List<TEntity>> GetAllWithIncludesTrackedAsync(
+            CancellationToken cancellationToken = default,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            IQueryable<TEntity> query = DbSet;
+
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            return await query.ToListAsync(cancellationToken);
+        }
+
         public IQueryable<TEntity> GetQueryable()
         {
             return DbSet.AsNoTracking();
         }
-
     }
 }

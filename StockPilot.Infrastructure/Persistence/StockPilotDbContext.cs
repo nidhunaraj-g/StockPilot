@@ -1,11 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using StockPilot.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StockPilot.Infrastructure.Persistence
 {
@@ -19,6 +15,8 @@ namespace StockPilot.Infrastructure.Persistence
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
         public DbSet<Supplier> Suppliers => Set<Supplier>();
+        public DbSet<Purchase> Purchases => Set<Purchase>();
+        public DbSet<PurchaseItem> PurchaseItems => Set<PurchaseItem>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

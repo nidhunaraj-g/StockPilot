@@ -83,14 +83,14 @@ namespace StockPilot.Application.Features.Orders.Queries
                 TaxAmount = order.TaxAmount,
                 TotalAmount = order.TotalAmount,
 
-                Items = order.Items.Select(item => new OrderItemResponse
+                Items = [.. order.Items.Select(item => new OrderItemResponse
                 {
                     ProductId = item.ProductId,
                     ProductName = item.Product.Name,
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice,
                     Subtotal = item.Subtotal
-                }).ToList()
+                })]
             }).ToList();
 
             return new OrderListResponse
