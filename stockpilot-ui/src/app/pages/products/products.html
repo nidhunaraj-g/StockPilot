@@ -1,0 +1,412 @@
+<div class="products-page">
+
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">INVENTORY / CATALOG</span>
+      <h1>Products</h1>
+      <p>Manage your products, pricing and inventory details.</p>
+    </div>
+
+    <button class="primary-button" (click)="openAddForm()">
+      <mat-icon>add</mat-icon>
+      Add Product
+    </button>
+  </header>
+
+  @if (successMessage) {
+    <div class="success-message">
+      <mat-icon>check_circle</mat-icon>
+      {{ successMessage }}
+      <button (click)="successMessage = ''">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
+  @if (errorMessage && !showForm) {
+    <div class="error-message">
+      <mat-icon>error_outline</mat-icon>
+      {{ errorMessage }}
+      <button (click)="errorMessage = ''">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
+  <section class="filter-card">
+
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input
+        type="text"
+        placeholder="Search by product name or SKU..."
+        [(ngModel)]="searchTerm"
+        (keyup.enter)="searchProducts()">
+      @if (searchTerm) {
+        <button class="clear-search" (click)="clearSearch()">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </div>
+
+    <button class="search-button" (click)="searchProducts()">
+      Search
+    </button>
+
+    <select [(ngModel)]="selectedCategoryId">
+      <option value="">All Categories</option>
+      @for (category of categories; track category.id) {
+        <option [value]="category.id">{{ category.name }}</option>
+      }
+    </select>
+
+    <select [(ngModel)]="selectedBrandId">
+      <option value="">All Brands</option>
+      @for (brand of brands; track brand.id) {
+        <option [value]="brand.id">{{ brand.name }}</option>
+      }
+    </select>
+
+    <button class="clear-button" (click)="clearFilters()">
+      <mat-icon>filter_alt_off</mat-icon>
+      Clear
+    </button>
+
+  </section>
+
+  <section class="products-card">
+
+    <div class="table-header">
+      <div>
+        <h2>Product Inventory</h2>
+        <p>View and manage your registered products.</p>
+      </div>
+
+      <span class="total-badge">
+        {{ totalCount }} products
+      </span>
+    </div>
+
+    @if (isLoading) {
+      <div class="loading-state">
+        <mat-icon>sync</mat-icon>
+        Loading products...
+      </div>
+    } @else if (filteredProducts.length > 0) {
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>SKU / Barcode</th>
+              <th>Category</th>
+              <th>Brand</th>
+              <th>Cost Price</th>
+              <th>Selling Price</th>
+              <th>Min. Stock</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (product of filteredProducts; track product.id) {
+              <tr>
+                <td>
+                  <div class="product-name">{{ product.name }}</div>
+                  <div class="product-description">
+                    {{ product.description || 'No description' }}
+                  </div>
+                </td>
+
+                <td>
+                  <strong>{{ product.sku }}</strong>
+                  <span class="secondary-text">
+                    {{ product.barcode || 'No barcode' }}
+                  </span>
+                </td>
+
+                <td>{{ product.categoryName }}</td>
+
+                <td>{{ product.brandName || '—' }}</td>
+
+                <td>
+                  {{ product.costPrice | currency:'INR':'symbol':'1.2-2' }}
+                </td>
+
+                <td class="selling-price">
+                  {{ product.sellingPrice | currency:'INR':'symbol':'1.2-2' }}
+                </td>
+
+                <td>{{ product.minimumStockLevel }}</td>
+
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      class="edit-button"
+                      title="Edit product"
+                      (click)="openEditForm(product)">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+
+                    <button
+                      class="delete-button"
+                      title="Delete product"
+                      (click)="confirmDelete(product)">
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    } @else {
+      <div class="empty-state">
+        <mat-icon>inventory_2</mat-icon>
+        <h3>No products found</h3>
+        <p>Try changing your search or filters, or add a new product.</p>
+        <button class="primary-button" (click)="openAddForm()">
+          <mat-icon>add</mat-icon>
+          Add Product
+        </button>
+      </div>
+    }
+
+    <div class="pagination">
+
+      <div class="pagination-info">
+        Showing {{ totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1 }}
+        -
+        {{ totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + products.length }}
+        of {{ totalCount }} products
+      </div>
+
+      <div class="pagination-controls">
+        <select
+          [(ngModel)]="pageSize"
+          (ngModelChange)="onPageSizeChange()">
+          <option [ngValue]="5">5 per page</option>
+          <option [ngValue]="10">10 per page</option>
+          <option [ngValue]="25">25 per page</option>
+          <option [ngValue]="50">50 per page</option>
+        </select>
+
+        <button
+          [disabled]="pageNumber <= 1"
+          (click)="previousPage()">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+
+        <span>Page {{ pageNumber }} of {{ totalPages || 1 }}</span>
+
+        <button
+          [disabled]="pageNumber >= totalPages"
+          (click)="nextPage()">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+@if (showForm) {
+  <div class="modal-overlay" (click)="closeForm()">
+
+    <div class="product-modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow">PRODUCT CATALOG</span>
+          <h2>{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h2>
+          <p>
+            {{ isEditMode
+              ? 'Update the product information.'
+              : 'Enter the details to register a new product.' }}
+          </p>
+        </div>
+
+        <button class="close-button" (click)="closeForm()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      @if (errorMessage) {
+        <div class="error-message">
+          <mat-icon>error_outline</mat-icon>
+          {{ errorMessage }}
+        </div>
+      }
+
+      <form (ngSubmit)="saveProduct()">
+
+        <div class="form-grid">
+
+          <div class="form-field">
+            <label>Product Name *</label>
+            <input
+              type="text"
+              name="name"
+              [(ngModel)]="form.name"
+              placeholder="Enter product name"
+              required>
+          </div>
+
+          <div class="form-field">
+            <label>SKU *</label>
+            <input
+              type="text"
+              name="sku"
+              [(ngModel)]="form.sku"
+              placeholder="e.g. SKU-1002"
+              required>
+          </div>
+
+          <div class="form-field">
+            <label>Barcode</label>
+            <input
+              type="text"
+              name="barcode"
+              [(ngModel)]="form.barcode"
+              placeholder="Enter barcode">
+          </div>
+
+          <div class="form-field">
+            <label>Category *</label>
+            <select
+              name="categoryId"
+              [(ngModel)]="form.categoryId"
+              required>
+              <option [ngValue]="0" disabled>Select category</option>
+              @for (category of categories; track category.id) {
+                <option [ngValue]="category.id">
+                  {{ category.name }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Brand</label>
+            <select
+              name="brandId"
+              [(ngModel)]="form.brandId">
+              <option [ngValue]="null">No brand</option>
+              @for (brand of brands; track brand.id) {
+                <option [ngValue]="brand.id">
+                  {{ brand.name }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Cost Price (₹) *</label>
+            <input
+              type="number"
+              name="costPrice"
+              [(ngModel)]="form.costPrice"
+              min="0"
+              step="0.01"
+              required>
+          </div>
+
+          <div class="form-field">
+            <label>Selling Price (₹) *</label>
+            <input
+              type="number"
+              name="sellingPrice"
+              [(ngModel)]="form.sellingPrice"
+              min="0"
+              step="0.01"
+              required>
+          </div>
+
+          <div class="form-field">
+            <label>Minimum Stock Level *</label>
+            <input
+              type="number"
+              name="minimumStockLevel"
+              [(ngModel)]="form.minimumStockLevel"
+              min="0"
+              required>
+          </div>
+
+          <div class="form-field full-width">
+            <label>Description</label>
+            <textarea
+              name="description"
+              [(ngModel)]="form.description"
+              rows="3"
+              placeholder="Enter product description"></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="cancel-button"
+            [disabled]="isSaving"
+            (click)="closeForm()">
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="isSaving">
+            <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+            {{ isSaving
+              ? 'Saving...'
+              : isEditMode ? 'Update Product' : 'Create Product' }}
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+}
+
+@if (showDeleteConfirmation && deletingProduct) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+
+    <div class="delete-modal" (click)="$event.stopPropagation()">
+
+      <div class="delete-icon">
+        <mat-icon>delete_outline</mat-icon>
+      </div>
+
+      <h2>Delete Product?</h2>
+
+      <p>
+        Are you sure you want to delete
+        <strong>{{ deletingProduct.name }}</strong>?
+        This will deactivate the product.
+      </p>
+
+      <div class="modal-actions">
+        <button
+          class="cancel-button"
+          (click)="cancelDelete()">
+          Cancel
+        </button>
+
+        <button
+          class="danger-button"
+          (click)="deleteProduct()">
+          Yes, Delete
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+}

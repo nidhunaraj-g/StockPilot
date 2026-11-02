@@ -1,0 +1,294 @@
+
+<div class="categories-page">
+
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb">Inventory / Categories</div>
+      <h1>Categories</h1>
+      <p>Organize and manage your product categories.</p>
+    </div>
+
+    <button class="primary-button" (click)="openAddForm()">
+      <mat-icon>add</mat-icon>
+      Add Category
+    </button>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert success-alert">
+      <mat-icon>check_circle</mat-icon>
+      {{ successMessage }}
+      <button (click)="clearMessages()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
+  @if (errorMessage && !showForm) {
+    <div class="alert error-alert">
+      <mat-icon>error</mat-icon>
+      {{ errorMessage }}
+      <button (click)="clearMessages()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-icon purple">
+        <mat-icon>category</mat-icon>
+      </div>
+      <div>
+        <span>Total Categories</span>
+        <h2>{{ categories.length }}</h2>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-icon green">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <div>
+        <span>Active Categories</span>
+        <h2>{{ activeCategoryCount }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-card">
+
+    <div class="toolbar">
+      <div>
+        <h2>All Categories</h2>
+        <p>Manage your product category list.</p>
+      </div>
+
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input
+          type="text"
+          placeholder="Search categories..."
+          [(ngModel)]="searchTerm">
+        @if (searchTerm) {
+          <button (click)="searchTerm = ''">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading categories...</p>
+      </div>
+    } @else if (filteredCategories.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <mat-icon>category</mat-icon>
+        </div>
+        <h3>No categories found</h3>
+        <p>
+          @if (searchTerm) {
+            Try another search term.
+          } @else {
+            Create your first category to organize your products.
+          }
+        </p>
+        @if (!searchTerm) {
+          <button class="primary-button" (click)="openAddForm()">
+            <mat-icon>add</mat-icon>
+            Add Category
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Created Date</th>
+              <th class="action-heading">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (category of filteredCategories; track category.id) {
+              <tr>
+                <td>
+                  <div class="category-name">
+                    <div class="category-icon">
+                      <mat-icon>category</mat-icon>
+                    </div>
+                    <div>
+                      <strong>{{ category.name }}</strong>
+                    </div>
+                  </div>
+                </td>
+
+                <td class="description-cell">
+                  {{ category.description || 'No description' }}
+                </td>
+
+                <td>
+                  <span
+                    class="status"
+                    [class.active]="category.isActive"
+                    [class.inactive]="!category.isActive">
+                    {{ category.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+
+                <td>
+                  {{ category.createdAtUtc
+                    ? (category.createdAtUtc | date:'dd MMM yyyy')
+                    : '—' }}
+                </td>
+
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      class="icon-button edit-button"
+                      title="Edit category"
+                      (click)="openEditForm(category)">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+
+                    <button
+                      class="icon-button delete-button"
+                      title="Delete category"
+                      (click)="openDeleteConfirmation(category)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        Showing {{ filteredCategories.length }} of {{ categories.length }} categories
+      </div>
+    }
+  </div>
+</div>
+
+@if (showForm) {
+  <div class="modal-backdrop" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div>
+          <h2>{{ isEditMode ? 'Edit Category' : 'Add Category' }}</h2>
+          <p>
+            {{ isEditMode
+              ? 'Update the category information.'
+              : 'Enter the details for your new category.' }}
+          </p>
+        </div>
+
+        <button class="close-button" (click)="closeForm()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      @if (errorMessage) {
+        <div class="alert error-alert">
+          <mat-icon>error</mat-icon>
+          {{ errorMessage }}
+        </div>
+      }
+
+      <form (ngSubmit)="saveCategory()">
+
+        <div class="form-group">
+          <label for="categoryName">
+            Category Name <span>*</span>
+          </label>
+          <input
+            id="categoryName"
+            type="text"
+            name="categoryName"
+            [(ngModel)]="categoryForm.name"
+            placeholder="e.g. Electronics"
+            maxlength="100"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="categoryDescription">Description</label>
+          <textarea
+            id="categoryDescription"
+            name="categoryDescription"
+            [(ngModel)]="categoryForm.description"
+            placeholder="Enter category description..."
+            rows="4"
+            maxlength="500"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            [disabled]="saving"
+            (click)="closeForm()">
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="saving">
+            @if (saving) {
+              Saving...
+            } @else {
+              {{ isEditMode ? 'Update Category' : 'Save Category' }}
+            }
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}
+
+@if (showDeleteConfirmation && categoryToDelete) {
+  <div class="modal-backdrop" (click)="closeDeleteConfirmation()">
+    <div class="modal delete-modal" (click)="$event.stopPropagation()">
+
+      <div class="delete-icon">
+        <mat-icon>delete_outline</mat-icon>
+      </div>
+
+      <h2>Delete Category?</h2>
+      <p>
+        Are you sure you want to delete
+        <strong>{{ categoryToDelete.name }}</strong>?
+      </p>
+      <p class="warning-text">
+        Products associated with this category may prevent deletion.
+      </p>
+
+      <div class="modal-actions">
+        <button
+          class="secondary-button"
+          (click)="closeDeleteConfirmation()">
+          Cancel
+        </button>
+
+        <button
+          class="danger-button"
+          (click)="confirmDelete()">
+          Delete Category
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

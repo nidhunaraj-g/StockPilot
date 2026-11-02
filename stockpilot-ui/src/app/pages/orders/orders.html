@@ -1,0 +1,345 @@
+
+<div class="orders-page">
+
+  <div class="page-header">
+    <div>
+      <h1>Orders</h1>
+      <p>Manage and monitor customer orders.</p>
+    </div>
+
+    <button class="refresh-btn" (click)="loadOrders()">
+      ↻ Refresh
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div class="message success-message" *ngIf="successMessage">
+    {{ successMessage }}
+    <button (click)="successMessage = ''">×</button>
+  </div>
+
+  <div class="message error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+    <button (click)="errorMessage = ''">×</button>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="summary-grid">
+
+    <div class="summary-card">
+      <span class="summary-label">Total Orders</span>
+      <h2>{{ totalCount }}</h2>
+      <span class="summary-icon">📦</span>
+    </div>
+
+    <div class="summary-card">
+      <span class="summary-label">Confirmed Orders</span>
+      <h2>{{ confirmedCount }}</h2>
+      <span class="summary-icon">✓</span>
+    </div>
+
+    <div class="summary-card">
+      <span class="summary-label">Cancelled Orders</span>
+      <h2>{{ cancelledCount }}</h2>
+      <span class="summary-icon">✕</span>
+    </div>
+
+    <div class="summary-card">
+      <span class="summary-label">Revenue on This Page</span>
+      <h2>{{ totalRevenue | currency:'INR':'symbol':'1.0-2' }}</h2>
+      <span class="summary-icon">₹</span>
+    </div>
+
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-section">
+
+    <div class="search-box">
+      <span>⌕</span>
+      <input
+        type="text"
+        [(ngModel)]="search"
+        placeholder="Search order number or customer..."
+        (keyup.enter)="searchOrders()">
+    </div>
+
+    <select
+      [(ngModel)]="selectedStatus"
+      (ngModelChange)="filterByStatus()">
+
+      <option value="">All Statuses</option>
+      <option value="Pending">Pending</option>
+      <option value="Confirmed">Confirmed</option>
+      <option value="Completed">Completed</option>
+      <option value="Cancelled">Cancelled</option>
+
+    </select>
+
+    <button class="search-btn" (click)="searchOrders()">
+      Search
+    </button>
+
+    <button class="clear-btn" (click)="clearFilters()">
+      Clear
+    </button>
+
+  </div>
+
+  <!-- Orders table -->
+  <div class="table-container">
+
+    <div class="table-header">
+      <h3>Order List</h3>
+      <span>{{ totalCount }} orders found</span>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+      Loading orders...
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && orders.length === 0">
+      <div class="empty-icon">📦</div>
+      <h3>No orders found</h3>
+      <p>Orders will appear here when customers place them.</p>
+    </div>
+
+    <div class="table-scroll" *ngIf="!loading && orders.length > 0">
+
+      <table>
+        <thead>
+          <tr>
+            <th>Order Number</th>
+            <th>Customer</th>
+            <th>Order Date</th>
+            <th>Items</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let order of orders">
+
+            <td>
+              <strong>{{ order.orderNumber }}</strong>
+            </td>
+
+            <td>
+              <div class="customer-info">
+                <strong>{{ order.customerName }}</strong>
+                <small>{{ order.customerEmail }}</small>
+              </div>
+            </td>
+
+            <td>
+              {{ order.orderDateUtc | date:'dd MMM yyyy, hh:mm a' }}
+            </td>
+
+            <td>
+              {{ order.items.length }}
+              {{ order.items.length === 1 ? 'item' : 'items' }}
+            </td>
+
+            <td class="amount">
+              {{ order.totalAmount | currency:'INR':'symbol':'1.2-2' }}
+            </td>
+
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+                {{ order.status }}
+              </span>
+            </td>
+
+            <td>
+              <div class="action-buttons">
+
+                <button
+                  class="view-btn"
+                  title="View order"
+                  (click)="viewOrder(order)">
+                  View
+                </button>
+
+                <button
+                  *ngIf="order.status.toLowerCase() !== 'cancelled'"
+                  class="cancel-btn"
+                  title="Cancel order"
+                  (click)="confirmCancel(order)">
+                  Cancel
+                </button>
+
+              </div>
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="!loading && totalCount > 0">
+
+      <span>
+        Page {{ currentPage }} of {{ totalPages }}
+      </span>
+
+      <div>
+        <button
+          [disabled]="currentPage <= 1"
+          (click)="previousPage()">
+          Previous
+        </button>
+
+        <button
+          [disabled]="currentPage >= totalPages"
+          (click)="nextPage()">
+          Next
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Order Details Modal -->
+<div class="modal-overlay" *ngIf="selectedOrder" (click)="closeDetails()">
+
+  <div class="modal details-modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div>
+        <h2>Order Details</h2>
+        <p>{{ selectedOrder.orderNumber }}</p>
+      </div>
+
+      <button class="close-btn" (click)="closeDetails()">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="details-grid">
+
+        <div>
+          <label>Customer Name</label>
+          <strong>{{ selectedOrder.customerName }}</strong>
+        </div>
+
+        <div>
+          <label>Email</label>
+          <strong>{{ selectedOrder.customerEmail }}</strong>
+        </div>
+
+        <div>
+          <label>Phone</label>
+          <strong>{{ selectedOrder.customerPhone || 'Not provided' }}</strong>
+        </div>
+
+        <div>
+          <label>Order Date</label>
+          <strong>{{ selectedOrder.orderDateUtc | date:'dd MMM yyyy, hh:mm a' }}</strong>
+        </div>
+
+        <div>
+          <label>Status</label>
+          <span
+            class="status-badge"
+            [ngClass]="getStatusClass(selectedOrder.status)">
+            {{ selectedOrder.status }}
+          </span>
+        </div>
+
+      </div>
+
+      <h3>Order Items</h3>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let item of selectedOrder.items">
+              <td>{{ item.productName }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.unitPrice | currency:'INR':'symbol':'1.2-2' }}</td>
+              <td>{{ item.subtotal | currency:'INR':'symbol':'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="order-total">
+
+        <div>
+          <span>Subtotal</span>
+          <strong>{{ selectedOrder.subtotal | currency:'INR':'symbol':'1.2-2' }}</strong>
+        </div>
+
+        <div>
+          <span>Tax</span>
+          <strong>{{ selectedOrder.taxAmount | currency:'INR':'symbol':'1.2-2' }}</strong>
+        </div>
+
+        <div class="grand-total">
+          <span>Total Amount</span>
+          <strong>{{ selectedOrder.totalAmount | currency:'INR':'symbol':'1.2-2' }}</strong>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal-overlay" *ngIf="orderToCancel" (click)="closeCancelConfirmation()">
+
+  <div class="modal confirmation-modal" (click)="$event.stopPropagation()">
+
+    <div class="confirmation-icon">!</div>
+
+    <h2>Cancel Order?</h2>
+
+    <p>
+      Are you sure you want to cancel order
+      <strong>{{ orderToCancel.orderNumber }}</strong>?
+    </p>
+
+    <p class="warning-text">
+      The order will be cancelled and the stock will be restored.
+    </p>
+
+    <div class="modal-actions">
+
+      <button
+        class="clear-btn"
+        [disabled]="cancelling"
+        (click)="closeCancelConfirmation()">
+        Keep Order
+      </button>
+
+      <button
+        class="danger-btn"
+        [disabled]="cancelling"
+        (click)="cancelOrder()">
+        {{ cancelling ? 'Cancelling...' : 'Yes, Cancel Order' }}
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

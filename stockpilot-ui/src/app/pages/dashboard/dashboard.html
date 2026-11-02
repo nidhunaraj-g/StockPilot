@@ -1,0 +1,217 @@
+<div class="dashboard-page">
+
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">INVENTORY OVERVIEW</span>
+      <h1>Dashboard</h1>
+      <p>Welcome to StockPilot. Here's your inventory overview.</p>
+    </div>
+
+    <button class="refresh-button" (click)="loadDashboard()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </header>
+
+  @if (isLoading) {
+    <div class="message-card">
+      <mat-icon>sync</mat-icon>
+      <span>Loading dashboard data...</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="error-message">
+      <mat-icon>error_outline</mat-icon>
+      {{ errorMessage }}
+    </div>
+  }
+
+  @if (!isLoading && summary) {
+
+    <section class="stats-grid">
+
+      <article class="stat-card">
+        <div class="stat-icon blue">
+          <mat-icon>inventory_2</mat-icon>
+        </div>
+        <div>
+          <span class="stat-label">Total Products</span>
+          <h2>{{ summary.totalActiveProducts }}</h2>
+          <span class="stat-description">Active products</span>
+        </div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-icon purple">
+          <mat-icon>warehouse</mat-icon>
+        </div>
+        <div>
+          <span class="stat-label">Total Stock Units</span>
+          <h2>{{ summary.totalStockUnits }}</h2>
+          <span class="stat-description">Units available</span>
+        </div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-icon orange">
+          <mat-icon>warning_amber</mat-icon>
+        </div>
+        <div>
+          <span class="stat-label">Low Stock Products</span>
+          <h2>{{ summary.lowStockProducts }}</h2>
+          <span class="stat-description">Need replenishment</span>
+        </div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-icon red">
+          <mat-icon>remove_shopping_cart</mat-icon>
+        </div>
+        <div>
+          <span class="stat-label">Out of Stock</span>
+          <h2>{{ summary.outOfStockProducts }}</h2>
+          <span class="stat-description">Products unavailable</span>
+        </div>
+      </article>
+
+    </section>
+
+    <section class="value-card">
+      <div class="value-icon">
+        <mat-icon>payments</mat-icon>
+      </div>
+
+      <div>
+        <span>Inventory Cost Value</span>
+        <h2>{{ getInventoryValue() | currency:'INR':'symbol':'1.2-2' }}</h2>
+        <p>Calculated using product cost price × available stock</p>
+      </div>
+    </section>
+
+    <section class="content-grid">
+
+      <div class="content-card inventory-card">
+
+        <div class="section-header">
+          <div>
+            <h2>Product Inventory</h2>
+            <p>Current stock levels for your products</p>
+          </div>
+
+          <span class="count-badge">
+            {{ products.length }} products
+          </span>
+        </div>
+
+        @if (products.length > 0) {
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th>Stock</th>
+                  <th>Minimum</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (product of products; track product.id) {
+                  <tr>
+                    <td>
+                      <div class="product-name">
+                        {{ product.name }}
+                      </div>
+                      <span class="product-category">
+                        {{ product.categoryName }}
+                      </span>
+                    </td>
+
+                    <td>{{ product.sku }}</td>
+
+                    <td class="stock-number">
+                      {{ product.stockQuantity ?? 0 }}
+                    </td>
+
+                    <td>{{ product.minimumStockLevel }}</td>
+
+                    <td>
+                      <span
+                        class="status-badge"
+                        [class.in-stock]="getStockStatus(product) === 'In stock'"
+                        [class.low-stock]="getStockStatus(product) === 'Low stock'"
+                        [class.out-stock]="getStockStatus(product) === 'Out of stock'">
+                        {{ getStockStatus(product) }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <mat-icon>inventory_2</mat-icon>
+            <p>No products found.</p>
+          </div>
+        }
+
+      </div>
+
+      <div class="content-card movements-card">
+
+        <div class="section-header">
+          <div>
+            <h2>Recent Stock Movements</h2>
+            <p>Latest inventory transactions</p>
+          </div>
+        </div>
+
+        @if (movements.length > 0) {
+          <div class="movement-list">
+
+            @for (movement of movements.slice(0, 6); track movement.id) {
+              <div class="movement-item">
+
+                <div
+                  class="movement-icon"
+                  [class.movement-in]="movement.movementType === 'IN'"
+                  [class.movement-out]="movement.movementType === 'OUT'">
+                  <mat-icon>
+                    {{ getMovementIcon(movement.movementType) }}
+                  </mat-icon>
+                </div>
+
+                <div class="movement-details">
+                  <strong>{{ movement.productName || 'Product #' + movement.productId }}</strong>
+                  <span>{{ movement.reason }}</span>
+                  <small>{{ movement.createdAtUtc | date:'medium' }}</small>
+                </div>
+
+                <strong
+                  class="movement-quantity"
+                  [class.quantity-in]="movement.movementType === 'IN'"
+                  [class.quantity-out]="movement.movementType === 'OUT'">
+                  {{ movement.movementType === 'IN' ? '+' : '-' }}{{ movement.quantity }}
+                </strong>
+
+              </div>
+            }
+
+          </div>
+        } @else {
+          <div class="empty-state">
+            <mat-icon>history</mat-icon>
+            <p>No stock movements found.</p>
+          </div>
+        }
+
+      </div>
+
+    </section>
+
+  }
+
+</div>

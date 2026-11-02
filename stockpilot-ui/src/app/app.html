@@ -1,0 +1,89 @@
+
+<div class="app-layout">
+
+  <aside class="sidebar">
+
+    <div class="brand">
+      <div class="brand-icon">
+        <mat-icon>inventory_2</mat-icon>
+      </div>
+
+      <div class="brand-text">
+        <h2>StockPilot</h2>
+        <span>Inventory Management</span>
+      </div>
+    </div>
+
+    <div class="navigation-label">MAIN MENU</div>
+
+    <nav class="navigation">
+
+      <!-- Dashboard -->
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-link">
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+      </a>
+
+      <!-- Products -->
+      <a
+        routerLink="/products"
+        routerLinkActive="active"
+        class="nav-link">
+        <mat-icon>inventory_2</mat-icon>
+        <span>Products</span>
+      </a>
+
+      <!-- Categories -->
+      <a
+        routerLink="/categories"
+        routerLinkActive="active"
+        class="nav-link">
+        <mat-icon>category</mat-icon>
+        <span>Categories</span>
+      </a>
+
+      <!--Brands-->
+      <a routerLink="/brands" routerLinkActive="active" class="nav-link">
+        <mat-icon>branding_watermark</mat-icon>
+        <span>Brands</span>
+      </a>
+
+      <!--Orders-->
+      <a routerLink="/orders" routerLinkActive="active" class="nav-link">
+        <mat-icon>receipt_long</mat-icon>
+        <span>Orders</span>
+      </a>
+
+      <!-- Stock Management -->
+      <a
+        routerLink="/stock-management"
+        routerLinkActive="active"
+        class="nav-link">
+        <mat-icon>warehouse</mat-icon>
+        <span>Stock Management</span>
+      </a>
+
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="footer-icon">
+        <mat-icon>verified_user</mat-icon>
+      </div>
+
+      <div>
+        <strong>StockPilot</strong>
+        <span>Inventory System</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

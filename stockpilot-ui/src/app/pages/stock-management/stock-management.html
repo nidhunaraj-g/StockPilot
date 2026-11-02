@@ -1,0 +1,299 @@
+
+<div class="stock-page">
+
+  <header class="page-header">
+    <div>
+      <div class="eyebrow">INVENTORY / STOCK CONTROL</div>
+      <h1>Stock Management</h1>
+      <p>Track inventory levels and manage stock movements.</p>
+    </div>
+
+    <div class="header-icon">
+      <mat-icon>inventory_2</mat-icon>
+    </div>
+  </header>
+
+  @if (successMessage) {
+    <div class="alert success">
+      <mat-icon>check_circle</mat-icon>
+      {{ successMessage }}
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert error">
+      <mat-icon>error_outline</mat-icon>
+      {{ errorMessage }}
+    </div>
+  }
+
+  <section class="overview-grid">
+
+    <article class="overview-card">
+      <div class="card-icon blue">
+        <mat-icon>inventory_2</mat-icon>
+      </div>
+      <div>
+        <span>Total Products</span>
+        <h2>{{ products.length }}</h2>
+        <small>Active inventory items</small>
+      </div>
+    </article>
+
+    <article class="overview-card">
+      <div class="card-icon purple">
+        <mat-icon>layers</mat-icon>
+      </div>
+      <div>
+        <span>Total Stock Units</span>
+        <h2>{{ getTotalStock() }}</h2>
+        <small>Available inventory quantity</small>
+      </div>
+    </article>
+
+    <article class="overview-card">
+      <div class="card-icon orange">
+        <mat-icon>warning_amber</mat-icon>
+      </div>
+      <div>
+        <span>Low Stock Products</span>
+        <h2>{{ getLowStockCount() }}</h2>
+        <small>Products requiring attention</small>
+      </div>
+    </article>
+
+  </section>
+
+  <section class="main-grid">
+
+    <article class="panel adjustment-panel">
+
+      <div class="section-heading">
+        <div>
+          <h2>Adjust Inventory</h2>
+          <p>Record stock additions or reductions.</p>
+        </div>
+        <mat-icon>edit_note</mat-icon>
+      </div>
+
+      <div class="movement-toggle">
+        <button
+          type="button"
+          [class.active-in]="movementType === 'IN'"
+          (click)="selectMovementType('IN')">
+          <mat-icon>add_circle_outline</mat-icon>
+          Stock IN
+        </button>
+
+        <button
+          type="button"
+          [class.active-out]="movementType === 'OUT'"
+          (click)="selectMovementType('OUT')">
+          <mat-icon>remove_circle_outline</mat-icon>
+          Stock OUT
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label for="product">Product</label>
+        <select
+          id="product"
+          [(ngModel)]="selectedProductId">
+
+          <option [ngValue]="null">Choose a product</option>
+
+          @for (product of products; track product.id) {
+            <option [ngValue]="product.id">
+              {{ product.name }} — {{ product.sku }}
+            </option>
+          }
+        </select>
+      </div>
+
+      @if (selectedProduct) {
+        <div class="stock-info">
+          <div class="stock-info-icon">
+            <mat-icon>inventory</mat-icon>
+          </div>
+          <div>
+            <span>Available stock</span>
+            <strong>{{ currentStock }} units</strong>
+          </div>
+          <div class="minimum-info">
+            <span>Minimum level</span>
+            <strong>{{ selectedProduct.minimumStockLevel }}</strong>
+          </div>
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="quantity">Quantity</label>
+        <input
+          id="quantity"
+          type="number"
+          min="1"
+          step="1"
+          [(ngModel)]="quantity"
+          placeholder="Enter quantity">
+      </div>
+
+      <div class="form-group">
+        <label for="reason">Reason for adjustment</label>
+        <input
+          id="reason"
+          type="text"
+          [(ngModel)]="reason"
+          placeholder="e.g. New purchase, damaged items">
+      </div>
+
+      <button
+        type="button"
+        class="submit-button"
+        [class.out-button]="movementType === 'OUT'"
+        [disabled]="isSaving || isLoading || products.length === 0"
+        (click)="adjustStock()">
+
+        @if (isSaving) {
+          <mat-icon>hourglass_empty</mat-icon>
+          Processing...
+        } @else {
+          <mat-icon>
+            {{ movementType === 'IN' ? 'add' : 'remove' }}
+          </mat-icon>
+          {{ movementType === 'IN' ? 'Add Stock' : 'Reduce Stock' }}
+        }
+      </button>
+
+      <p class="form-note">
+        <mat-icon>info_outline</mat-icon>
+        Every adjustment is recorded in stock movement history.
+      </p>
+
+    </article>
+
+    <article class="panel inventory-panel">
+
+      <div class="section-heading">
+        <div>
+          <h2>Current Inventory</h2>
+          <p>Overview of your product stock levels.</p>
+        </div>
+        <span class="item-count">{{ products.length }} items</span>
+      </div>
+
+      @if (isLoading) {
+        <div class="empty-state">
+          <mat-icon>hourglass_empty</mat-icon>
+          <p>Loading inventory...</p>
+        </div>
+      } @else if (products.length === 0) {
+        <div class="empty-state">
+          <mat-icon>inventory_2</mat-icon>
+          <p>No products available.</p>
+        </div>
+      } @else {
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>PRODUCT</th>
+                <th>SKU</th>
+                <th>STOCK</th>
+                <th>MINIMUM</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (product of products; track product.id) {
+                <tr>
+                  <td>
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="product-category">{{ product.categoryName }}</div>
+                  </td>
+                  <td class="sku">{{ product.sku }}</td>
+                  <td class="stock-number">{{ product.stockQuantity }}</td>
+                  <td>{{ product.minimumStockLevel }}</td>
+                  <td>
+                    <span
+                      class="status"
+                      [class.low]="getStockStatus(product) === 'Low stock'"
+                      [class.out]="getStockStatus(product) === 'Out of stock'"
+                      [class.good]="getStockStatus(product) === 'In stock'">
+                      {{ getStockStatus(product) }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+    </article>
+
+  </section>
+
+  <section class="panel history-panel">
+
+    <div class="section-heading">
+      <div>
+        <h2>Stock Movement History</h2>
+        <p>Recent additions and reductions across your inventory.</p>
+      </div>
+      <div class="history-count">
+        <mat-icon>history</mat-icon>
+        {{ movements.length }} movements
+      </div>
+    </div>
+
+    @if (isLoading) {
+      <div class="empty-state">
+        <p>Loading movement history...</p>
+      </div>
+    } @else if (movements.length === 0) {
+      <div class="empty-state">
+        <mat-icon>history</mat-icon>
+        <p>No stock movements found.</p>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>PRODUCT</th>
+              <th>TYPE</th>
+              <th>QUANTITY</th>
+              <th>REASON</th>
+              <th>DATE</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (movement of movements; track movement.id) {
+              <tr>
+                <td class="product-name">{{ movement.productName }}</td>
+                <td>
+                  <span
+                    class="movement-badge"
+                    [class.in]="movement.movementType === 'IN'"
+                    [class.out]="movement.movementType === 'OUT'">
+                    <mat-icon>
+                      {{ movement.movementType === 'IN' ? 'south_west' : 'north_east' }}
+                    </mat-icon>
+                    {{ movement.movementType }}
+                  </span>
+                </td>
+                <td class="stock-number">{{ movement.quantity }}</td>
+                <td>{{ movement.reason }}</td>
+                <td class="date-cell">
+                  {{ movement.createdAtUtc | date:'dd MMM yyyy, hh:mm a' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </section>
+
+</div>

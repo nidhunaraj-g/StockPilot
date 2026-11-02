@@ -16,6 +16,9 @@ namespace StockPilot.Infrastructure.Persistence
         public DbSet<Product> Products => Set<Product>();
         public DbSet<ProductImage> ProductImages => Set<ProductImage>();
         public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+        public DbSet<Order> Orders => Set<Order>();
+        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+        public DbSet<Supplier> Suppliers => Set<Supplier>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

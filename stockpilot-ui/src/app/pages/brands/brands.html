@@ -1,0 +1,311 @@
+
+<div class="brands-page">
+
+  <div class="page-header">
+    <div>
+      <h1>Brands</h1>
+      <p>Manage the brands available in your StockPilot store.</p>
+    </div>
+
+    <button class="primary-button" (click)="openAddModal()">
+      <span>+</span> Add Brand
+    </button>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert success-alert">
+      {{ successMessage }}
+      <button type="button" (click)="clearMessages()">×</button>
+    </div>
+  }
+
+  @if (errorMessage && !showModal && !showDeleteModal) {
+    <div class="alert error-alert">
+      {{ errorMessage }}
+      <button type="button" (click)="clearMessages()">×</button>
+    </div>
+  }
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-icon total-icon">B</div>
+      <div>
+        <p>Total Brands</p>
+        <h2>{{ brands.length }}</h2>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-icon active-icon">✓</div>
+      <div>
+        <p>Active Brands</p>
+        <h2>{{ activeBrandsCount }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-card">
+
+    <div class="table-toolbar">
+      <div>
+        <h2>All Brands</h2>
+        <p>View and manage your registered brands.</p>
+      </div>
+
+      <div class="search-box">
+        <span>⌕</span>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="Search brands..."
+        />
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="state-container">
+        <div class="loader"></div>
+        <p>Loading brands...</p>
+      </div>
+    }
+    @else if (filteredBrands.length === 0) {
+      <div class="state-container empty-state">
+        <div class="empty-icon">B</div>
+
+        @if (searchTerm) {
+          <h3>No matching brands found</h3>
+          <p>Try searching with a different brand name.</p>
+        } @else {
+          <h3>No brands available</h3>
+          <p>Add your first brand to get started.</p>
+          <button class="primary-button" (click)="openAddModal()">
+            Add Brand
+          </button>
+        }
+      </div>
+    }
+    @else {
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>BRAND</th>
+              <th>DESCRIPTION</th>
+              <th>LOGO</th>
+              <th>STATUS</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (brand of filteredBrands; track brand.id) {
+              <tr>
+                <td>
+                  <div class="brand-cell">
+                    <div class="brand-avatar">
+                      @if (brand.logoUrl) {
+                        <img [src]="brand.logoUrl" [alt]="brand.name + ' logo'" />
+                      } @else {
+                        {{ brand.name.charAt(0).toUpperCase() }}
+                      }
+                    </div>
+
+                    <div>
+                      <strong>{{ brand.name }}</strong>
+                    </div>
+                  </div>
+                </td>
+
+                <td class="description-cell">
+                  {{ brand.description || 'No description provided' }}
+                </td>
+
+                <td>
+                  @if (brand.logoUrl) {
+                    <a [href]="brand.logoUrl" target="_blank" rel="noopener noreferrer">
+                      View logo
+                    </a>
+                  } @else {
+                    <span class="muted-text">Not available</span>
+                  }
+                </td>
+
+                <td>
+                  <span
+                    class="status-badge"
+                    [class.status-active]="brand.isActive"
+                    [class.status-inactive]="!brand.isActive"
+                  >
+                    {{ brand.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      class="edit-button"
+                      type="button"
+                      (click)="openEditModal(brand)"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      class="delete-button"
+                      type="button"
+                      (click)="openDeleteModal(brand)"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        Showing {{ filteredBrands.length }} of {{ brands.length }} brands
+      </div>
+    }
+  </div>
+</div>
+
+@if (showModal) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div>
+          <h2>{{ isEditMode ? 'Edit Brand' : 'Add New Brand' }}</h2>
+          <p>
+            {{
+              isEditMode
+                ? 'Update the brand information.'
+                : 'Enter the details of the new brand.'
+            }}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="close-button"
+          (click)="closeModal()"
+        >
+          ×
+        </button>
+      </div>
+
+      @if (errorMessage) {
+        <div class="alert error-alert">{{ errorMessage }}</div>
+      }
+
+      <form (ngSubmit)="saveBrand()">
+
+        <div class="form-group">
+          <label for="brandName">Brand Name <span>*</span></label>
+          <input
+            id="brandName"
+            type="text"
+            name="name"
+            [(ngModel)]="brandForm.name"
+            placeholder="Example: Nike"
+            maxlength="100"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="brandDescription">Description</label>
+          <textarea
+            id="brandDescription"
+            name="description"
+            [(ngModel)]="brandForm.description"
+            placeholder="Enter brand description"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="brandLogo">Logo URL</label>
+          <input
+            id="brandLogo"
+            type="url"
+            name="logoUrl"
+            [(ngModel)]="brandForm.logoUrl"
+            placeholder="https://example.com/logo.png"
+          />
+          <small>Optional. Enter a publicly accessible image URL.</small>
+        </div>
+
+        @if (brandForm.logoUrl) {
+          <div class="logo-preview">
+            <label>Logo Preview</label>
+            <img [src]="brandForm.logoUrl" alt="Brand logo preview" />
+          </div>
+        }
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            (click)="closeModal()"
+            [disabled]="saving"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="saving"
+          >
+            {{ saving ? 'Saving...' : (isEditMode ? 'Update Brand' : 'Create Brand') }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}
+
+@if (showDeleteModal) {
+  <div class="modal-backdrop" (click)="closeDeleteModal()">
+    <div class="modal delete-modal" (click)="$event.stopPropagation()">
+
+      <div class="delete-icon">!</div>
+
+      <h2>Delete Brand?</h2>
+
+      <p>
+        Are you sure you want to delete
+        <strong>{{ brandToDelete?.name }}</strong>?
+        This action cannot be undone from this screen.
+      </p>
+
+      @if (errorMessage) {
+        <div class="alert error-alert">{{ errorMessage }}</div>
+      }
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="closeDeleteModal()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="danger-button"
+          (click)="deleteBrand()"
+        >
+          Confirm Delete
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
