@@ -1,11 +1,16 @@
 ﻿
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using StockPilot.Domain.Entities;
+using StockPilot.Infrastructure.Identity;
 
 namespace StockPilot.Infrastructure.Persistence
 {
-    public class StockPilotDbContext(DbContextOptions<StockPilotDbContext> options) : DbContext(options)
+    public class StockPilotDbContext(
+        DbContextOptions<StockPilotDbContext> options)
+        : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>(options)
     {
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<Brand> Brands => Set<Brand>();
@@ -17,6 +22,7 @@ namespace StockPilot.Infrastructure.Persistence
         public DbSet<Supplier> Suppliers => Set<Supplier>();
         public DbSet<Purchase> Purchases => Set<Purchase>();
         public DbSet<PurchaseItem> PurchaseItems => Set<PurchaseItem>();
+        public DbSet<Customer> Customers => Set<Customer>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

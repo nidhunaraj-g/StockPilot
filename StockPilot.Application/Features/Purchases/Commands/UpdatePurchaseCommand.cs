@@ -45,28 +45,16 @@ namespace StockPilot.Application.Features.Purchases.Commands
 
             var supplier = await supplierRepository.FindFirstOrDefaultAsync(
                 s => s.Id == command.Request.SupplierId && s.IsActive,
-                cancellationToken);
-
-            if (supplier is null)
-            {
-                throw new ValidationException(
+                cancellationToken) ?? throw new ValidationException(
                     "Supplier not found or inactive.");
-            }
-
             var updatedItems = new List<PurchaseItem>();
 
             foreach (var itemRequest in command.Request.Items)
             {
                 var product = await productRepository.FindFirstOrDefaultAsync(
                     p => p.Id == itemRequest.ProductId && p.IsActive,
-                    cancellationToken);
-
-                if (product is null)
-                {
-                    throw new ValidationException(
+                    cancellationToken) ?? throw new ValidationException(
                         $"Product with ID {itemRequest.ProductId} was not found or is inactive.");
-                }
-
                 updatedItems.Add(new PurchaseItem
                 {
                     ProductId = product.Id,
