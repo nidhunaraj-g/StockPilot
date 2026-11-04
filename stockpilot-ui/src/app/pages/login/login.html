@@ -1,0 +1,140 @@
+
+<div class="auth-page">
+  <div class="auth-shell">
+
+    <section class="visual-panel">
+      <a routerLink="/shop" class="visual-brand">
+        <span class="brand-icon">📦</span>
+        <span>StockPilot</span>
+      </a>
+
+      <div class="visual-content">
+        <span class="eyebrow">WELCOME BACK</span>
+
+        <h1>Your shopping experience starts here.</h1>
+
+        <p>
+          Discover quality products, manage your cart and enjoy
+          a simple and convenient shopping experience.
+        </p>
+
+        <div class="visual-highlights">
+          <div class="highlight">
+            <span class="highlight-icon">✦</span>
+            <div>
+              <strong>Easy shopping</strong>
+              <small>Find what you need effortlessly</small>
+            </div>
+          </div>
+
+          <div class="highlight">
+            <span class="highlight-icon">✓</span>
+            <div>
+              <strong>Secure account</strong>
+              <small>Your account is protected</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="visual-decoration decoration-one"></div>
+      <div class="visual-decoration decoration-two"></div>
+
+      <div class="visual-footer">
+        © 2026 StockPilot. All rights reserved.
+      </div>
+    </section>
+
+    <section class="form-panel">
+      <div class="form-container">
+
+        <div class="mobile-brand">
+          <span>📦</span> StockPilot
+        </div>
+
+        <div class="form-heading">
+          <span class="form-label">CUSTOMER ACCOUNT</span>
+          <h2>Welcome back!</h2>
+          <p>Enter your details to access your account.</p>
+        </div>
+
+        <div class="error-message" *ngIf="errorMessage">
+          <span>⚠</span>
+          {{ errorMessage }}
+        </div>
+
+        <form (ngSubmit)="login()">
+
+          <div class="form-group">
+            <label for="userName">Username</label>
+
+            <div class="input-wrapper">
+              <span class="input-icon">👤</span>
+              <input
+                id="userName"
+                type="text"
+                name="userName"
+                [(ngModel)]="userName"
+                placeholder="Enter your username"
+                autocomplete="username"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+
+              <input
+                id="password"
+                [type]="showPassword ? 'text' : 'password'"
+                name="password"
+                [(ngModel)]="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="showPassword = !showPassword"
+                [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+              >
+                {{ showPassword ? 'Hide' : 'Show' }}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="submit-button"
+            [disabled]="isLoading"
+          >
+            <span>{{ isLoading ? 'Signing in...' : 'Sign In' }}</span>
+            <span *ngIf="!isLoading">→</span>
+            <span class="spinner" *ngIf="isLoading"></span>
+          </button>
+
+        </form>
+
+        <div class="form-divider">
+          <span>NEW TO STOCKPILOT?</span>
+        </div>
+
+        <a routerLink="/register" class="secondary-button">
+          Create an account
+        </a>
+
+        <a routerLink="/shop" class="back-link">
+          ← Back to shopping
+        </a>
+
+      </div>
+    </section>
+
+  </div>
+</div>

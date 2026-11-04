@@ -1,0 +1,356 @@
+
+<div class="profile-page">
+
+  <div class="profile-container">
+
+    <!-- Page Header -->
+    <div class="profile-header">
+
+      <div>
+        <span class="eyebrow">STOCKPILOT ACCOUNT</span>
+        <h1>My Profile</h1>
+        <p>Manage your personal details and delivery information.</p>
+      </div>
+
+      <a routerLink="/shop" class="back-button">
+        ← Back to Shop
+      </a>
+
+    </div>
+
+    <!-- Success Notification -->
+    <div
+      *ngIf="successMessage"
+      class="notification success-notification"
+      role="status"
+      aria-live="polite">
+
+      <div class="notification-icon">✓</div>
+
+      <div class="notification-content">
+        <strong>Profile Updated Successfully!</strong>
+        <p>{{ successMessage }}</p>
+      </div>
+
+    </div>
+
+    <!-- Error Notification -->
+    <div
+      *ngIf="errorMessage"
+      class="notification error-notification"
+      role="alert">
+
+      <div class="notification-icon">!</div>
+
+      <div class="notification-content">
+        <strong>Something went wrong</strong>
+        <p>{{ errorMessage }}</p>
+      </div>
+
+    </div>
+
+    <!-- Loading Screen -->
+    <div *ngIf="isLoading" class="loading-card">
+
+      <div class="loader"></div>
+
+      <h3>Updating Your Profile</h3>
+
+      <p>
+        Please wait while we refresh your information...
+      </p>
+
+    </div>
+
+    <!-- Profile Content -->
+    <div
+      *ngIf="!isLoading && profile"
+      class="profile-content">
+
+      <!-- Profile Banner -->
+      <div class="profile-banner">
+
+        <div class="profile-banner-left">
+
+          <div class="avatar">
+            {{ profile.firstName.charAt(0) }}{{ profile.lastName.charAt(0) }}
+          </div>
+
+          <div class="banner-details">
+
+            <span class="banner-label">
+              CUSTOMER ACCOUNT
+            </span>
+
+            <h2>
+              {{ profile.firstName }} {{ profile.lastName }}
+            </h2>
+
+            <p>{{ profile.email }}</p>
+
+          </div>
+
+        </div>
+
+        <div
+          class="status-badge"
+          [class.inactive]="!profile.isActive">
+
+          <span class="status-dot"></span>
+
+          {{ profile.isActive ? 'Active Account' : 'Inactive Account' }}
+
+        </div>
+
+      </div>
+
+      <!-- Profile Form Card -->
+      <div class="profile-card">
+
+        <div class="card-heading">
+
+          <div>
+            <h2>Personal Details</h2>
+            <p>Keep your account information up to date.</p>
+          </div>
+
+          <div class="card-heading-icon">✎</div>
+
+        </div>
+
+        <form
+          #profileForm="ngForm"
+          (ngSubmit)="updateProfile()">
+
+          <!-- Personal Information -->
+          <div class="section-heading">
+
+            <span class="section-number">01</span>
+
+            <div>
+              <h3>Personal Information</h3>
+              <p>Your basic contact details</p>
+            </div>
+
+          </div>
+
+          <div class="form-grid">
+
+            <div class="form-group">
+
+              <label for="firstName">First Name</label>
+
+              <input
+                id="firstName"
+                type="text"
+                name="firstName"
+                [(ngModel)]="form.firstName"
+                placeholder="Enter first name"
+                required
+                maxlength="100"
+              />
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="lastName">Last Name</label>
+
+              <input
+                id="lastName"
+                type="text"
+                name="lastName"
+                [(ngModel)]="form.lastName"
+                placeholder="Enter last name"
+                required
+                maxlength="100"
+              />
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="email">Email Address</label>
+
+              <input
+                id="email"
+                type="email"
+                [value]="profile.email"
+                disabled
+              />
+
+              <small>Email cannot be changed here.</small>
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="phone">Phone Number</label>
+
+              <input
+                id="phone"
+                type="tel"
+                name="phone"
+                [(ngModel)]="form.phone"
+                placeholder="Enter phone number"
+                required
+              />
+
+            </div>
+
+          </div>
+
+          <!-- Address Information -->
+          <div class="section-heading address-heading">
+
+            <span class="section-number">02</span>
+
+            <div>
+              <h3>Address Information</h3>
+              <p>Your delivery and location details</p>
+            </div>
+
+          </div>
+
+          <div class="form-grid">
+
+            <div class="form-group full-width">
+
+              <label for="address">Street Address</label>
+
+              <input
+                id="address"
+                type="text"
+                name="address"
+                [(ngModel)]="form.address"
+                placeholder="Enter your address"
+                required
+              />
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="city">City</label>
+
+              <input
+                id="city"
+                type="text"
+                name="city"
+                [(ngModel)]="form.city"
+                placeholder="Enter city"
+                required
+              />
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="state">State</label>
+
+              <input
+                id="state"
+                type="text"
+                name="state"
+                [(ngModel)]="form.state"
+                placeholder="Enter state"
+                required
+              />
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="country">Country</label>
+
+              <input
+                id="country"
+                type="text"
+                name="country"
+                [(ngModel)]="form.country"
+                placeholder="Enter country"
+                required
+              />
+
+            </div>
+
+            <div class="form-group">
+
+              <label for="postalCode">Postal Code</label>
+
+              <input
+                id="postalCode"
+                type="text"
+                name="postalCode"
+                [(ngModel)]="form.postalCode"
+                placeholder="Enter postal code"
+                required
+              />
+
+            </div>
+
+          </div>
+
+          <!-- Account Information -->
+          <div class="account-information">
+
+            <div class="account-info-item">
+
+              <span class="info-icon">#</span>
+
+              <div>
+                <small>Customer ID</small>
+                <strong>{{ profile.id }}</strong>
+              </div>
+
+            </div>
+
+            <div class="account-info-item">
+
+              <span class="info-icon">◷</span>
+
+              <div>
+                <small>Member Since</small>
+
+                <strong>
+                  {{ profile.createdAtUtc | date:'mediumDate' }}
+                </strong>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Form Footer -->
+          <div class="form-footer">
+
+            <p class="save-hint">
+              Make sure your information is correct before saving.
+            </p>
+
+            <button
+              type="submit"
+              class="save-button"
+              [disabled]="
+                isSaving ||
+                profileForm.invalid ||
+                !profile.isActive
+              ">
+
+              <span *ngIf="!isSaving">✓</span>
+
+              {{ isSaving ? 'Saving Changes...' : 'Save Changes' }}
+
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

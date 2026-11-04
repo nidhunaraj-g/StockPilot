@@ -1,0 +1,317 @@
+<div class="cart-page">
+
+  <!-- Header -->
+  <header class="cart-header">
+
+    <a class="cart-brand" routerLink="/shop">
+      <div class="brand-icon">S</div>
+
+      <div>
+        <h1>StockPilot</h1>
+        <p>Your shopping destination</p>
+      </div>
+    </a>
+
+    <a class="back-to-shop" routerLink="/shop">
+      ← Continue Shopping
+    </a>
+
+  </header>
+
+  <!-- Page heading -->
+  <section class="cart-title">
+    <span>🛒</span>
+
+    <div>
+      <h2>My Shopping Cart</h2>
+      <p>{{ cartCount }} items in your cart</p>
+    </div>
+  </section>
+
+  <!-- Cart content -->
+  <div class="cart-layout">
+
+    <main class="cart-main">
+
+      <!-- Empty cart -->
+      <div
+        class="empty-cart"
+        *ngIf="cartService.items().length === 0 && !checkoutSuccess">
+
+        <span>🛍️</span>
+
+        <h3>Your cart is empty</h3>
+
+        <p>You haven't added any products yet.</p>
+
+        <a routerLink="/shop" class="continue-shopping-button">
+          Explore Products
+        </a>
+
+      </div>
+
+      <!-- Cart items -->
+      <section
+        class="cart-items-section"
+        *ngIf="cartService.items().length > 0">
+
+        <div class="cart-section-heading">
+          <h3>Cart Items</h3>
+          <span>{{ cartCount }} items</span>
+        </div>
+
+        <article
+          class="cart-item"
+          *ngFor="let item of cartService.items()">
+
+          <!-- Product image -->
+          <div class="cart-product-image">
+
+            <img
+              *ngIf="item.product.images && item.product.images.length > 0"
+              [src]="item.product.images[0].imageUrl"
+              [alt]="item.product.name"
+            />
+
+            <span
+              *ngIf="!item.product.images || item.product.images.length === 0">
+              📦
+            </span>
+
+          </div>
+
+          <!-- Product details -->
+          <div class="cart-product-information">
+
+            <span class="product-category">
+              {{ item.product.categoryName }}
+            </span>
+
+            <h4>{{ item.product.name }}</h4>
+
+            <p>
+              ₹{{ item.product.sellingPrice | number:'1.2-2' }} each
+            </p>
+
+            <span
+              class="stock-information"
+              *ngIf="item.product.stockQuantity !== undefined">
+              {{ item.product.stockQuantity }} units available
+            </span>
+
+          </div>
+
+          <!-- Quantity -->
+          <div class="cart-quantity">
+
+            <span>Quantity</span>
+
+            <div class="quantity-controls">
+
+              <button
+                type="button"
+                (click)="decreaseQuantity(item.product.id)"
+                aria-label="Decrease quantity">
+                −
+              </button>
+
+              <strong>{{ item.quantity }}</strong>
+
+              <button
+                type="button"
+                [disabled]="!cartService.canAddProduct(item.product)"
+                (click)="increaseQuantity(item.product.id)"
+                aria-label="Increase quantity">
+                +
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- Subtotal and remove -->
+          <div class="cart-item-total">
+
+            <strong>
+              ₹{{ (item.product.sellingPrice * item.quantity) | number:'1.2-2' }}
+            </strong>
+
+            <button
+              type="button"
+              class="remove-button"
+              (click)="removeFromCart(item.product.id)">
+              Remove
+            </button>
+
+          </div>
+
+        </article>
+
+      </section>
+
+      <!-- Checkout form -->
+      <section
+        class="checkout-section"
+        *ngIf="cartService.items().length > 0">
+
+        <div class="checkout-heading">
+          <h3>Checkout Details</h3>
+          <p>Enter your details to place your order.</p>
+        </div>
+
+        <form #checkoutForm="ngForm" (ngSubmit)="placeOrder()">
+
+          <div class="checkout-fields">
+
+            <!-- Customer name -->
+            <div class="checkout-field">
+
+              <label for="customerName">Full Name *</label>
+
+              <input
+                id="customerName"
+                type="text"
+                name="customerName"
+                [(ngModel)]="customerName"
+                required
+                maxlength="150"
+                placeholder="Enter your full name"
+              />
+
+            </div>
+
+            <!-- Customer email -->
+            <div class="checkout-field">
+
+              <label for="customerEmail">Email Address *</label>
+
+              <input
+                id="customerEmail"
+                type="email"
+                name="customerEmail"
+                [(ngModel)]="customerEmail"
+                required
+                maxlength="254"
+                email
+                placeholder="Enter your email address"
+              />
+
+            </div>
+
+            <!-- Customer phone -->
+            <div class="checkout-field">
+
+              <label for="customerPhone">Phone Number</label>
+
+              <input
+                id="customerPhone"
+                type="tel"
+                name="customerPhone"
+                [(ngModel)]="customerPhone"
+                maxlength="20"
+                placeholder="Enter your phone number"
+              />
+
+            </div>
+
+          </div>
+
+          <!-- Payment method -->
+          <div class="payment-method">
+
+            <strong>Payment Method</strong>
+
+            <div class="cod-option">
+
+              <span>💵</span>
+
+              <div>
+                <strong>Cash on Delivery</strong>
+                <p>Pay when your order is delivered.</p>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Checkout error -->
+          <p class="checkout-error" *ngIf="checkoutError">
+            {{ checkoutError }}
+          </p>
+
+          <button
+            type="submit"
+            class="place-order-button"
+            [disabled]="isSubmittingOrder || checkoutForm.invalid">
+
+            {{ isSubmittingOrder ? 'Placing Order...' : 'Place Order' }}
+
+          </button>
+
+        </form>
+
+      </section>
+
+      <!-- Order success -->
+      <div class="checkout-success" *ngIf="checkoutSuccess">
+
+        <span>✓</span>
+
+        <h3>Order Placed Successfully!</h3>
+
+        <p>{{ checkoutSuccess }}</p>
+
+        <p *ngIf="placedOrder">
+          Order Number:
+          <strong>{{ placedOrder.orderNumber }}</strong>
+        </p>
+
+        <a routerLink="/shop" class="continue-shopping-button">
+          Continue Shopping
+        </a>
+
+      </div>
+
+    </main>
+
+    <!-- Order summary -->
+    <aside
+      class="order-summary"
+      *ngIf="cartService.items().length > 0">
+
+      <h3>Order Summary</h3>
+
+      <div class="summary-row">
+        <span>Items</span>
+        <span>{{ cartCount }}</span>
+      </div>
+
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span>₹{{ cartTotal | number:'1.2-2' }}</span>
+      </div>
+
+      <div class="summary-row">
+        <span>Delivery</span>
+        <span class="free-delivery">Free</span>
+      </div>
+
+      <div class="summary-total">
+        <span>Total</span>
+        <strong>₹{{ cartTotal | number:'1.2-2' }}</strong>
+      </div>
+
+      <p class="summary-note">
+        Final order prices are calculated by the server.
+      </p>
+
+    </aside>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="cart-footer">
+    <p>© 2026 StockPilot. All rights reserved.</p>
+  </footer>
+
+</div>

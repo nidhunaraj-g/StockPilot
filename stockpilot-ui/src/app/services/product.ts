@@ -5,6 +5,22 @@ import { Observable } from 'rxjs';
 
 const API_URL = 'https://localhost:7294/api';
 
+// Product image models
+export interface ProductImageRequest {
+  imageUrl: string;
+  altText: string | null;
+  isPrimary: boolean;
+  sortOrder: number;
+}
+
+export interface ProductImage {
+  id: number;
+  imageUrl: string;
+  altText: string | null;
+  isPrimary: boolean;
+  sortOrder: number;
+}
+
 // Product models
 export interface CreateProductRequest {
   sku: string;
@@ -16,6 +32,7 @@ export interface CreateProductRequest {
   costPrice: number;
   sellingPrice: number;
   minimumStockLevel: number;
+  images: ProductImageRequest[];
 }
 
 export interface UpdateProductRequest extends CreateProductRequest {}
@@ -37,6 +54,7 @@ export interface Product {
   createdAtUtc: string;
   updatedAtUtc: string | null;
   stockQuantity?: number;
+  images: ProductImage[];
 }
 
 // Category models
@@ -80,6 +98,7 @@ export interface UpdateBrandRequest {
   logoUrl: string | null;
 }
 
+// Product pagination
 export interface ProductPage {
   products: Product[];
   totalCount: number;

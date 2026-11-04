@@ -17,6 +17,7 @@
     <div class="success-message">
       <mat-icon>check_circle</mat-icon>
       {{ successMessage }}
+
       <button (click)="successMessage = ''">
         <mat-icon>close</mat-icon>
       </button>
@@ -27,6 +28,7 @@
     <div class="error-message">
       <mat-icon>error_outline</mat-icon>
       {{ errorMessage }}
+
       <button (click)="errorMessage = ''">
         <mat-icon>close</mat-icon>
       </button>
@@ -37,11 +39,13 @@
 
     <div class="search-box">
       <mat-icon>search</mat-icon>
+
       <input
         type="text"
         placeholder="Search by product name or SKU..."
         [(ngModel)]="searchTerm"
         (keyup.enter)="searchProducts()">
+
       @if (searchTerm) {
         <button class="clear-search" (click)="clearSearch()">
           <mat-icon>close</mat-icon>
@@ -55,15 +59,21 @@
 
     <select [(ngModel)]="selectedCategoryId">
       <option value="">All Categories</option>
+
       @for (category of categories; track category.id) {
-        <option [value]="category.id">{{ category.name }}</option>
+        <option [value]="category.id">
+          {{ category.name }}
+        </option>
       }
     </select>
 
     <select [(ngModel)]="selectedBrandId">
       <option value="">All Brands</option>
+
       @for (brand of brands; track brand.id) {
-        <option [value]="brand.id">{{ brand.name }}</option>
+        <option [value]="brand.id">
+          {{ brand.name }}
+        </option>
       }
     </select>
 
@@ -113,7 +123,10 @@
             @for (product of filteredProducts; track product.id) {
               <tr>
                 <td>
-                  <div class="product-name">{{ product.name }}</div>
+                  <div class="product-name">
+                    {{ product.name }}
+                  </div>
+
                   <div class="product-description">
                     {{ product.description || 'No description' }}
                   </div>
@@ -121,6 +134,7 @@
 
                 <td>
                   <strong>{{ product.sku }}</strong>
+
                   <span class="secondary-text">
                     {{ product.barcode || 'No barcode' }}
                   </span>
@@ -142,6 +156,7 @@
 
                 <td>
                   <div class="action-buttons">
+
                     <button
                       class="edit-button"
                       title="Edit product"
@@ -155,6 +170,7 @@
                       (click)="confirmDelete(product)">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
+
                   </div>
                 </td>
               </tr>
@@ -168,6 +184,7 @@
         <mat-icon>inventory_2</mat-icon>
         <h3>No products found</h3>
         <p>Try changing your search or filters, or add a new product.</p>
+
         <button class="primary-button" (click)="openAddForm()">
           <mat-icon>add</mat-icon>
           Add Product
@@ -178,20 +195,24 @@
     <div class="pagination">
 
       <div class="pagination-info">
-        Showing {{ totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1 }}
+        Showing
+        {{ totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1 }}
         -
         {{ totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + products.length }}
         of {{ totalCount }} products
       </div>
 
       <div class="pagination-controls">
+
         <select
           [(ngModel)]="pageSize"
           (ngModelChange)="onPageSizeChange()">
+
           <option [ngValue]="5">5 per page</option>
           <option [ngValue]="10">10 per page</option>
           <option [ngValue]="25">25 per page</option>
           <option [ngValue]="50">50 per page</option>
+
         </select>
 
         <button
@@ -207,6 +228,7 @@
           (click)="nextPage()">
           <mat-icon>chevron_right</mat-icon>
         </button>
+
       </div>
 
     </div>
@@ -223,7 +245,11 @@
       <div class="modal-header">
         <div>
           <span class="eyebrow">PRODUCT CATALOG</span>
-          <h2>{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h2>
+
+          <h2>
+            {{ isEditMode ? 'Edit Product' : 'Add New Product' }}
+          </h2>
+
           <p>
             {{ isEditMode
               ? 'Update the product information.'
@@ -249,6 +275,7 @@
 
           <div class="form-field">
             <label>Product Name *</label>
+
             <input
               type="text"
               name="name"
@@ -259,6 +286,7 @@
 
           <div class="form-field">
             <label>SKU *</label>
+
             <input
               type="text"
               name="sku"
@@ -269,6 +297,7 @@
 
           <div class="form-field">
             <label>Barcode</label>
+
             <input
               type="text"
               name="barcode"
@@ -278,35 +307,44 @@
 
           <div class="form-field">
             <label>Category *</label>
+
             <select
               name="categoryId"
               [(ngModel)]="form.categoryId"
               required>
+
               <option [ngValue]="0" disabled>Select category</option>
+
               @for (category of categories; track category.id) {
                 <option [ngValue]="category.id">
                   {{ category.name }}
                 </option>
               }
+
             </select>
           </div>
 
           <div class="form-field">
             <label>Brand</label>
+
             <select
               name="brandId"
               [(ngModel)]="form.brandId">
+
               <option [ngValue]="null">No brand</option>
+
               @for (brand of brands; track brand.id) {
                 <option [ngValue]="brand.id">
                   {{ brand.name }}
                 </option>
               }
+
             </select>
           </div>
 
           <div class="form-field">
             <label>Cost Price (₹) *</label>
+
             <input
               type="number"
               name="costPrice"
@@ -318,6 +356,7 @@
 
           <div class="form-field">
             <label>Selling Price (₹) *</label>
+
             <input
               type="number"
               name="sellingPrice"
@@ -329,6 +368,7 @@
 
           <div class="form-field">
             <label>Minimum Stock Level *</label>
+
             <input
               type="number"
               name="minimumStockLevel"
@@ -339,6 +379,7 @@
 
           <div class="form-field full-width">
             <label>Description</label>
+
             <textarea
               name="description"
               [(ngModel)]="form.description"
@@ -348,7 +389,121 @@
 
         </div>
 
+        <!-- Product Images Section -->
+        <section class="image-section">
+
+          <div class="image-section-heading">
+            <div>
+              <h3>Product Images</h3>
+              <p>Add image URLs to display product photos.</p>
+            </div>
+
+            <span class="image-count">
+              {{ form.images.length }} images
+            </span>
+          </div>
+
+          <div class="image-input-grid">
+
+            <div class="form-field">
+              <label>Image URL *</label>
+
+              <input
+                type="url"
+                name="newImageUrl"
+                [(ngModel)]="newImageUrl"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="https://example.com/product-image.jpg">
+            </div>
+
+            <div class="form-field">
+              <label>Image Description</label>
+
+              <input
+                type="text"
+                name="newImageAltText"
+                [(ngModel)]="newImageAltText"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="e.g. Front view of shoes">
+            </div>
+
+          </div>
+
+          <button
+            type="button"
+            class="add-image-button"
+            (click)="addImageUrl()">
+
+            <mat-icon>add_photo_alternate</mat-icon>
+            Add Image URL
+
+          </button>
+
+          @if (form.images.length > 0) {
+
+            <div class="image-preview-grid">
+
+              @for (image of form.images; track $index; let i = $index) {
+
+                <div class="image-preview-card">
+
+                  <div class="image-preview-container">
+                    <img
+                      [src]="image.imageUrl"
+                      [alt]="image.altText || 'Product image'"
+                      (error)="onImagePreviewError($event)">
+
+                    @if (image.isPrimary) {
+                      <span class="primary-image-label">
+                        Primary
+                      </span>
+                    }
+                  </div>
+
+                  <div class="image-preview-details">
+                    <span class="image-alt-text">
+                      {{ image.altText || 'Product image' }}
+                    </span>
+
+                    <div class="image-preview-actions">
+
+                      @if (!image.isPrimary) {
+                        <button
+                          type="button"
+                          class="make-primary-button"
+                          (click)="setPrimaryImage(i)">
+                          Make Primary
+                        </button>
+                      }
+
+                      <button
+                        type="button"
+                        class="remove-image-button"
+                        title="Remove image"
+                        (click)="removeImage(i)">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+
+                    </div>
+                  </div>
+
+                </div>
+
+              }
+
+            </div>
+
+          } @else {
+            <div class="no-images-message">
+              <mat-icon>image</mat-icon>
+              <span>No product images added yet.</span>
+            </div>
+          }
+
+        </section>
+
         <div class="modal-actions">
+
           <button
             type="button"
             class="cancel-button"
@@ -361,11 +516,17 @@
             type="submit"
             class="primary-button"
             [disabled]="isSaving">
-            <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+
+            <mat-icon>
+              {{ isEditMode ? 'save' : 'add' }}
+            </mat-icon>
+
             {{ isSaving
               ? 'Saving...'
               : isEditMode ? 'Update Product' : 'Create Product' }}
+
           </button>
+
         </div>
 
       </form>
@@ -393,6 +554,7 @@
       </p>
 
       <div class="modal-actions">
+
         <button
           class="cancel-button"
           (click)="cancelDelete()">
@@ -404,6 +566,7 @@
           (click)="deleteProduct()">
           Yes, Delete
         </button>
+
       </div>
 
     </div>

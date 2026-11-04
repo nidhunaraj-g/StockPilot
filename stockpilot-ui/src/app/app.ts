@@ -1,6 +1,14 @@
-import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+
+import { Component, inject } from '@angular/core';
+import {
+  Router,
+  RouterOutlet,
+  RouterLink,
+  RouterLinkActive,
+  NavigationEnd
+} from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -15,4 +23,34 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrl: './app.scss'
 })
 export class App {
+  private router = inject(Router);
+
+  isShopRoute = this.isCustomerRoute(this.router.url);
+
+  constructor() {
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(event => {
+        if (event instanceof NavigationEnd) {
+          this.isShopRoute = this.isCustomerRoute(
+            event.urlAfterRedirects
+          );
+        }
+      });
+  }
+
+  private isCustomerRoute(url: string): boolean {
+    return (
+      url === '/shop' ||
+      url.startsWith('/shop/') ||
+      url === '/cart' ||
+      url.startsWith('/cart/') ||
+      url === '/login' ||
+      url.startsWith('/login/') ||
+      url === '/register' ||
+      url.startsWith('/register/') ||
+      url === '/profile' ||
+      url.startsWith('/profile/')
+    );
+  }
 }

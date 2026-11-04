@@ -15,7 +15,8 @@ import {
   Category,
   Brand,
   CreateProductRequest,
-  UpdateProductRequest
+  UpdateProductRequest,
+  ProductImageRequest
 } from '../../services/product';
 
 @Component({
@@ -60,6 +61,10 @@ export class Products implements OnInit {
   showDeleteConfirmation = false;
   deletingProduct: Product | null = null;
 
+  // Image URL fields
+  newImageUrl = '';
+  newImageAltText = '';
+
   form: CreateProductRequest = this.emptyForm();
 
   ngOnInit(): void {
@@ -77,7 +82,8 @@ export class Products implements OnInit {
       brandId: null,
       costPrice: 0,
       sellingPrice: 0,
-      minimumStockLevel: 0
+      minimumStockLevel: 0,
+      images: []
     };
   }
 
@@ -164,9 +170,14 @@ export class Products implements OnInit {
 
   openAddForm(): void {
     this.form = this.emptyForm();
+
+    this.newImageUrl = '';
+    this.newImageAltText = '';
+
     this.isEditMode = false;
     this.editingProductId = null;
     this.showForm = true;
+
     this.errorMessage = '';
     this.successMessage = '';
   }
@@ -184,12 +195,104 @@ export class Products implements OnInit {
       brandId: product.brandId,
       costPrice: product.costPrice,
       sellingPrice: product.sellingPrice,
-      minimumStockLevel: product.minimumStockLevel
+      minimumStockLevel: product.minimumStockLevel,
+      images: (product.images ?? []).map(image => ({
+        imageUrl: image.imageUrl,
+        altText: image.altText,
+        isPrimary: image.isPrimary,
+        sortOrder: image.sortOrder
+      }))
     };
+
+    this.newImageUrl = '';
+    this.newImageAltText = '';
 
     this.showForm = true;
     this.errorMessage = '';
     this.successMessage = '';
+  }
+
+  // Add a product image using its URL
+  addImageUrl(): void {
+    const imageUrl = this.newImageUrl.trim();
+
+    if (!imageUrl) {
+      this.errorMessage = 'Please enter an image URL.';
+      return;
+    }
+
+    try {
+      const parsedUrl = new URL(imageUrl);
+
+      if (
+        parsedUrl.protocol !== 'http:' &&
+        parsedUrl.protocol !== 'https:'
+      ) {
+        this.errorMessage = 'Please enter a valid HTTP or HTTPS image URL.';
+        return;
+      }
+    } catch {
+      this.errorMessage = 'Please enter a valid image URL.';
+      return;
+    }
+
+    const alreadyExists = this.form.images.some(
+      image => image.imageUrl.toLowerCase() === imageUrl.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      this.errorMessage = 'This image URL has already been added.';
+      return;
+    }
+
+    const isFirstImage = this.form.images.length === 0;
+
+    const image: ProductImageRequest = {
+      imageUrl,
+      altText: this.newImageAltText.trim() || null,
+      isPrimary: isFirstImage,
+      sortOrder: this.form.images.length
+    };
+
+    this.form.images = [
+      ...this.form.images,
+      image
+    ];
+
+    this.newImageUrl = '';
+    this.newImageAltText = '';
+    this.errorMessage = '';
+
+    this.cdr.detectChanges();
+  }
+
+  // Remove an image
+  removeImage(index: number): void {
+    this.form.images.splice(index, 1);
+
+    this.form.images = this.form.images.map((image, imageIndex) => ({
+      ...image,
+      sortOrder: imageIndex,
+      isPrimary: imageIndex === 0
+    }));
+
+    this.cdr.detectChanges();
+  }
+
+  // Select the primary image
+  setPrimaryImage(index: number): void {
+    this.form.images = this.form.images.map((image, imageIndex) => ({
+      ...image,
+      isPrimary: imageIndex === index
+    }));
+
+    this.cdr.detectChanges();
+  }
+
+  // Handle an image URL that fails to load in the preview
+  onImagePreviewError(event: Event): void {
+    const imageElement = event.target as HTMLImageElement;
+    imageElement.style.display = 'none';
   }
 
   closeForm(): void {
@@ -199,6 +302,10 @@ export class Products implements OnInit {
 
     this.showForm = false;
     this.form = this.emptyForm();
+
+    this.newImageUrl = '';
+    this.newImageAltText = '';
+
     this.errorMessage = '';
   }
 
@@ -237,7 +344,14 @@ export class Products implements OnInit {
         : null,
       costPrice: Number(this.form.costPrice),
       sellingPrice: Number(this.form.sellingPrice),
-      minimumStockLevel: Number(this.form.minimumStockLevel)
+      minimumStockLevel: Number(this.form.minimumStockLevel),
+
+      images: (this.form.images ?? []).map((image, index) => ({
+        imageUrl: image.imageUrl.trim(),
+        altText: image.altText?.trim() || null,
+        isPrimary: image.isPrimary,
+        sortOrder: index
+      }))
     };
 
     this.isSaving = true;
@@ -254,6 +368,7 @@ export class Products implements OnInit {
           this.successMessage = 'Product updated successfully!';
           this.showForm = false;
           this.isSaving = false;
+
           this.loadProducts();
           this.cdr.detectChanges();
         },
@@ -268,6 +383,7 @@ export class Products implements OnInit {
           this.showForm = false;
           this.pageNumber = 1;
           this.isSaving = false;
+
           this.loadProducts();
           this.cdr.detectChanges();
         },
@@ -357,5 +473,4 @@ export class Products implements OnInit {
     this.pageNumber = 1;
     this.loadProducts();
   }
-
 }
