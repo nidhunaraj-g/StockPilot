@@ -1,20 +1,16 @@
-﻿using AutoMapper;
+﻿
+using AutoMapper;
 using FluentValidation;
 using MediatR;
 using StockPilot.Application.Common.Interfaces;
 using StockPilot.Application.Features.Products.DTOs;
 using StockPilot.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StockPilot.Application.Features.Products.Commands
 {
     public record UpdateProductCommand(
-    int Id,
-    UpdateProductRequest Request) : IRequest<ProductResponse?>;
+        int Id,
+        UpdateProductRequest Request) : IRequest<ProductResponse?>;
 
     public class UpdateProductCommandHandler(
         IGenericRepository<Product> productRepository,
@@ -32,20 +28,30 @@ namespace StockPilot.Application.Features.Products.Commands
                 command.Request,
                 cancellationToken);
 
-            var product = await productRepository.GetByIdAsync(
-                command.Id,
-                cancellationToken);
+            // Load product with existing images (tracked)
+            var products =
+                await productRepository.GetAllWithIncludesTrackedAsync(
+                    cancellationToken,
+                    product => product.Images);
 
-            if (product is null || !product.IsActive)
+            var product = products.FirstOrDefault(
+                product => product.Id == command.Id &&
+                           product.IsActive);
+
+            if (product is null)
+            {
                 return null;
+            }
 
             var request = command.Request;
+
             var sku = request.SKU.Trim();
 
             var barcode = string.IsNullOrWhiteSpace(request.Barcode)
                 ? null
                 : request.Barcode.Trim();
 
+            // Validate category
             var category = await categoryRepository.GetByIdAsync(
                 request.CategoryId,
                 cancellationToken);
@@ -56,6 +62,7 @@ namespace StockPilot.Application.Features.Products.Commands
                     "The selected category does not exist or is inactive.");
             }
 
+            // Validate brand
             Brand? brand = null;
 
             if (request.BrandId.HasValue)
@@ -71,6 +78,7 @@ namespace StockPilot.Application.Features.Products.Commands
                 }
             }
 
+            // Check duplicate SKU
             var duplicateSku =
                 await productRepository.FindFirstOrDefaultAsync(
                     x => x.SKU == sku && x.Id != command.Id,
@@ -82,6 +90,7 @@ namespace StockPilot.Application.Features.Products.Commands
                     "A product with this SKU already exists.");
             }
 
+            // Check duplicate barcode
             if (barcode is not null)
             {
                 var duplicateBarcode =
@@ -96,6 +105,15 @@ namespace StockPilot.Application.Features.Products.Commands
                 }
             }
 
+            // Validate image URLs
+            if (request.Images.Any(image =>
+                string.IsNullOrWhiteSpace(image.ImageUrl)))
+            {
+                throw new ValidationException(
+                    "Image URL cannot be empty.");
+            }
+
+            // Update product details
             product.SKU = sku;
             product.Barcode = barcode;
             product.Name = request.Name.Trim();
@@ -106,22 +124,29 @@ namespace StockPilot.Application.Features.Products.Commands
             product.SellingPrice = request.SellingPrice;
             product.MinimumStockLevel = request.MinimumStockLevel;
 
-            // Keep the navigation properties in sync for response mapping.
             product.Category = category;
             product.Brand = brand;
 
-            RepositoryUpdate(productRepository, product);
+            // Replace existing images
+            product.Images.Clear();
 
-            await productRepository.SaveChangesAsync(cancellationToken);
+            foreach (var image in request.Images)
+            {
+                product.Images.Add(new ProductImage
+                {
+                    ImageUrl = image.ImageUrl.Trim(),
+                    AltText = image.AltText,
+                    IsPrimary = image.IsPrimary,
+                    SortOrder = image.SortOrder
+                });
+            }
+
+            productRepository.Update(product);
+
+            await productRepository.SaveChangesAsync(
+                cancellationToken);
 
             return mapper.Map<ProductResponse>(product);
-        }
-
-        private static void RepositoryUpdate(
-            IGenericRepository<Product> repository,
-            Product product)
-        {
-            repository.Update(product);
         }
     }
 }

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StockPilot.Domain.Entities
 {
     public class Order : BaseEntity
     {
+        public int? CustomerId { get; set; }
+        public Customer? Customer { get; set; }
+
         public string OrderNumber { get; set; } = string.Empty;
 
         public string CustomerName { get; set; } = string.Empty;
@@ -15,6 +15,12 @@ namespace StockPilot.Domain.Entities
         public string CustomerEmail { get; set; } = string.Empty;
 
         public string? CustomerPhone { get; set; }
+
+        public string DeliveryAddress { get; set; } = string.Empty;
+        public string DeliveryCity { get; set; } = string.Empty;
+        public string DeliveryState { get; set; } = string.Empty;
+        public string DeliveryCountry { get; set; } = string.Empty;
+        public string DeliveryPostalCode { get; set; } = string.Empty;
 
         public DateTime OrderDateUtc { get; set; }
 
@@ -26,6 +32,6 @@ namespace StockPilot.Domain.Entities
 
         public decimal TotalAmount { get; set; }
 
-        public ICollection<OrderItem> Items { get; set; }= [];
+        public ICollection<OrderItem> Items { get; set; } = [];
     }
 }

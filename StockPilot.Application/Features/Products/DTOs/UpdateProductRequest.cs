@@ -20,5 +20,7 @@ namespace StockPilot.Application.Features.Products.DTOs
         public decimal SellingPrice { get; set; }
 
         public int MinimumStockLevel { get; set; }
+
+        public List<ProductImageRequest> Images { get; set; } = [];
     }
 }

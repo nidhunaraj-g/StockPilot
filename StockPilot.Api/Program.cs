@@ -11,9 +11,11 @@ using StockPilot.Application;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Application and Infrastructure
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// JWT Configuration
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 var secretKey = jwtSettings["SecretKey"]
@@ -21,6 +23,7 @@ var secretKey = jwtSettings["SecretKey"]
 
 var key = Encoding.UTF8.GetBytes(secretKey);
 
+// Authentication
 builder.Services
     .AddAuthentication(options =>
     {
@@ -38,12 +41,16 @@ builder.Services
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+
             ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
+
             IssuerSigningKey = new SymmetricSecurityKey(key),
+
             ClockSkew = TimeSpan.FromMinutes(1)
         };
 
+        // Validate customer account when a customer JWT is used.
         options.Events = new JwtBearerEvents
         {
             OnTokenValidated = async context =>
@@ -52,7 +59,6 @@ builder.Services
                     .FindFirstValue("CustomerId");
 
                 // Admin tokens do not contain CustomerId.
-                // Their authentication is handled by role authorization.
                 if (string.IsNullOrWhiteSpace(customerIdValue))
                     return;
 
@@ -91,9 +97,26 @@ builder.Services
         };
     });
 
+// Authorization
+    builder.Services.AddAuthorizationBuilder()
+                    // Authorization
+                    .AddPolicy("CustomerOnly", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("CustomerId");
+    })
+                    // Authorization
+                    .AddPolicy("AdminOnly", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Admin");
+    });
+
+// Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// Swagger
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -122,6 +145,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -134,6 +158,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -141,6 +166,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseCors("AllowAngular");
 
 app.UseAuthentication();

@@ -1,35 +1,41 @@
-﻿using AutoMapper;
+﻿
+using AutoMapper;
 using FluentValidation;
 using MediatR;
 using StockPilot.Application.Common.Interfaces;
 using StockPilot.Application.Features.Products.DTOs;
 using StockPilot.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StockPilot.Application.Features.Products.Commands
 {
     public record CreateProductCommand(CreateProductRequest Request)
-    : IRequest<ProductResponse>;
+        : IRequest<ProductResponse>;
 
-    public class CreateProductCommandHandler(IGenericRepository<Product> productRepository,IGenericRepository<Category> categoryRepository,
-        IGenericRepository<Brand> brandRepository,IMapper mapper,IValidator<CreateProductRequest> validator)
+    public class CreateProductCommandHandler(
+        IGenericRepository<Product> productRepository,
+        IGenericRepository<Category> categoryRepository,
+        IGenericRepository<Brand> brandRepository,
+        IMapper mapper,
+        IValidator<CreateProductRequest> validator)
         : IRequestHandler<CreateProductCommand, ProductResponse>
     {
-        public async Task<ProductResponse> Handle(CreateProductCommand command,CancellationToken cancellationToken)
+        public async Task<ProductResponse> Handle(
+            CreateProductCommand command,
+            CancellationToken cancellationToken)
         {
-            await validator.ValidateAndThrowAsync(command.Request,cancellationToken);
+            await validator.ValidateAndThrowAsync(
+                command.Request,
+                cancellationToken);
 
             var request = command.Request;
 
             var sku = request.SKU.Trim();
+
             var barcode = string.IsNullOrWhiteSpace(request.Barcode)
                 ? null
                 : request.Barcode.Trim();
 
+            // Validate category
             var category = await categoryRepository.GetByIdAsync(
                 request.CategoryId,
                 cancellationToken);
@@ -40,9 +46,14 @@ namespace StockPilot.Application.Features.Products.Commands
                     "The selected category does not exist or is inactive.");
             }
 
+            // Validate brand
+            Brand? brand = null;
+
             if (request.BrandId.HasValue)
             {
-                var brand = await brandRepository.GetByIdAsync(request.BrandId.Value,cancellationToken);
+                brand = await brandRepository.GetByIdAsync(
+                    request.BrandId.Value,
+                    cancellationToken);
 
                 if (brand is null || !brand.IsActive)
                 {
@@ -51,24 +62,42 @@ namespace StockPilot.Application.Features.Products.Commands
                 }
             }
 
-            var existingSku = await productRepository.FindFirstOrDefaultAsync(product => product.SKU == sku,cancellationToken);
+            // Check duplicate SKU
+            var existingSku =
+                await productRepository.FindFirstOrDefaultAsync(
+                    product => product.SKU == sku,
+                    cancellationToken);
 
             if (existingSku is not null)
             {
-                throw new ValidationException("A product with this SKU already exists.");
+                throw new ValidationException(
+                    "A product with this SKU already exists.");
             }
 
+            // Check duplicate barcode
             if (barcode is not null)
             {
                 var existingBarcode =
-                    await productRepository.FindFirstOrDefaultAsync(product => product.Barcode == barcode,cancellationToken);
+                    await productRepository.FindFirstOrDefaultAsync(
+                        product => product.Barcode == barcode,
+                        cancellationToken);
 
                 if (existingBarcode is not null)
                 {
-                    throw new ValidationException("A product with this barcode already exists.");
+                    throw new ValidationException(
+                        "A product with this barcode already exists.");
                 }
             }
 
+            // Validate image URLs
+            if (request.Images.Any(image =>
+                string.IsNullOrWhiteSpace(image.ImageUrl)))
+            {
+                throw new ValidationException(
+                    "Image URL cannot be empty.");
+            }
+
+            // Create product
             var product = new Product
             {
                 SKU = sku,
@@ -80,25 +109,28 @@ namespace StockPilot.Application.Features.Products.Commands
                 CostPrice = request.CostPrice,
                 SellingPrice = request.SellingPrice,
                 MinimumStockLevel = request.MinimumStockLevel,
-                IsActive = true
+                IsActive = true,
+
+                Category = category,
+                Brand = brand,
+
+                Images = [.. request.Images.Select(image =>
+                    new ProductImage
+                    {
+                        ImageUrl = image.ImageUrl.Trim(),
+                        AltText = image.AltText,
+                        IsPrimary = image.IsPrimary,
+                        SortOrder = image.SortOrder
+                    })]
             };
 
-            await productRepository.AddAsync(product, cancellationToken);
-            await productRepository.SaveChangesAsync(cancellationToken);
-
-            // Load category and brand navigation properties for the response.
-            var savedProduct = await productRepository.GetByIdAsync(
-                product.Id,
+            // Save product and related images
+            await productRepository.AddAsync(
+                product,
                 cancellationToken);
 
-            // GetByIdAsync may not load navigation properties, so assign
-            // the already-validated entities for response mapping.
-            product.Category = category;
-
-            if (request.BrandId.HasValue)
-            {
-                product.Brand = await brandRepository.GetByIdAsync(request.BrandId.Value,cancellationToken);
-            }
+            await productRepository.SaveChangesAsync(
+                cancellationToken);
 
             return mapper.Map<ProductResponse>(product);
         }

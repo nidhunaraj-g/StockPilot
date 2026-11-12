@@ -19,14 +19,24 @@ namespace StockPilot.Application.Features.Orders.DTOs
     {
         public int Id { get; set; }
         public string OrderNumber { get; set; } = string.Empty;
+
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerEmail { get; set; } = string.Empty;
         public string? CustomerPhone { get; set; }
+
+        public string DeliveryAddress { get; set; } = string.Empty;
+        public string DeliveryCity { get; set; } = string.Empty;
+        public string DeliveryState { get; set; } = string.Empty;
+        public string DeliveryCountry { get; set; } = string.Empty;
+        public string DeliveryPostalCode { get; set; } = string.Empty;
+
         public DateTime OrderDateUtc { get; set; }
         public string Status { get; set; } = string.Empty;
+
         public decimal Subtotal { get; set; }
         public decimal TaxAmount { get; set; }
         public decimal TotalAmount { get; set; }
+
         public List<OrderItemResponse> Items { get; set; } = [];
     }
 }

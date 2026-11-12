@@ -1,11 +1,10 @@
+
 <div class="cart-page">
 
   <!-- Header -->
   <header class="cart-header">
-
     <a class="cart-brand" routerLink="/shop">
       <div class="brand-icon">S</div>
-
       <div>
         <h1>StockPilot</h1>
         <p>Your shopping destination</p>
@@ -15,13 +14,11 @@
     <a class="back-to-shop" routerLink="/shop">
       ← Continue Shopping
     </a>
-
   </header>
 
   <!-- Page heading -->
   <section class="cart-title">
     <span>🛒</span>
-
     <div>
       <h2>My Shopping Cart</h2>
       <p>{{ cartCount }} items in your cart</p>
@@ -39,15 +36,12 @@
         *ngIf="cartService.items().length === 0 && !checkoutSuccess">
 
         <span>🛍️</span>
-
         <h3>Your cart is empty</h3>
-
         <p>You haven't added any products yet.</p>
 
         <a routerLink="/shop" class="continue-shopping-button">
           Explore Products
         </a>
-
       </div>
 
       <!-- Cart items -->
@@ -66,7 +60,6 @@
 
           <!-- Product image -->
           <div class="cart-product-image">
-
             <img
               *ngIf="item.product.images && item.product.images.length > 0"
               [src]="item.product.images[0].imageUrl"
@@ -77,12 +70,10 @@
               *ngIf="!item.product.images || item.product.images.length === 0">
               📦
             </span>
-
           </div>
 
           <!-- Product details -->
           <div class="cart-product-information">
-
             <span class="product-category">
               {{ item.product.categoryName }}
             </span>
@@ -98,16 +89,13 @@
               *ngIf="item.product.stockQuantity !== undefined">
               {{ item.product.stockQuantity }} units available
             </span>
-
           </div>
 
           <!-- Quantity -->
           <div class="cart-quantity">
-
             <span>Quantity</span>
 
             <div class="quantity-controls">
-
               <button
                 type="button"
                 (click)="decreaseQuantity(item.product.id)"
@@ -124,14 +112,11 @@
                 aria-label="Increase quantity">
                 +
               </button>
-
             </div>
-
           </div>
 
           <!-- Subtotal and remove -->
           <div class="cart-item-total">
-
             <strong>
               ₹{{ (item.product.sellingPrice * item.quantity) | number:'1.2-2' }}
             </strong>
@@ -142,11 +127,9 @@
               (click)="removeFromCart(item.product.id)">
               Remove
             </button>
-
           </div>
 
         </article>
-
       </section>
 
       <!-- Checkout form -->
@@ -156,7 +139,7 @@
 
         <div class="checkout-heading">
           <h3>Checkout Details</h3>
-          <p>Enter your details to place your order.</p>
+          <p>Enter your details and delivery address to place your order.</p>
         </div>
 
         <form #checkoutForm="ngForm" (ngSubmit)="placeOrder()">
@@ -165,7 +148,6 @@
 
             <!-- Customer name -->
             <div class="checkout-field">
-
               <label for="customerName">Full Name *</label>
 
               <input
@@ -177,12 +159,10 @@
                 maxlength="150"
                 placeholder="Enter your full name"
               />
-
             </div>
 
             <!-- Customer email -->
             <div class="checkout-field">
-
               <label for="customerEmail">Email Address *</label>
 
               <input
@@ -195,12 +175,10 @@
                 email
                 placeholder="Enter your email address"
               />
-
             </div>
 
             <!-- Customer phone -->
             <div class="checkout-field">
-
               <label for="customerPhone">Phone Number</label>
 
               <input
@@ -211,27 +189,102 @@
                 maxlength="20"
                 placeholder="Enter your phone number"
               />
+            </div>
 
+          </div>
+
+          <!-- Delivery address -->
+          <div class="checkout-heading">
+            <h3>Delivery Address</h3>
+            <p>Where should we deliver your order?</p>
+          </div>
+
+          <div class="checkout-fields">
+
+            <div class="checkout-field">
+              <label for="deliveryAddress">Street Address *</label>
+
+              <input
+                id="deliveryAddress"
+                type="text"
+                name="deliveryAddress"
+                [(ngModel)]="deliveryAddress"
+                required
+                maxlength="300"
+                placeholder="House name, street, area"
+              />
+            </div>
+
+            <div class="checkout-field">
+              <label for="deliveryCity">City *</label>
+
+              <input
+                id="deliveryCity"
+                type="text"
+                name="deliveryCity"
+                [(ngModel)]="deliveryCity"
+                required
+                maxlength="100"
+                placeholder="Enter your city"
+              />
+            </div>
+
+            <div class="checkout-field">
+              <label for="deliveryState">State *</label>
+
+              <input
+                id="deliveryState"
+                type="text"
+                name="deliveryState"
+                [(ngModel)]="deliveryState"
+                required
+                maxlength="100"
+                placeholder="Enter your state"
+              />
+            </div>
+
+            <div class="checkout-field">
+              <label for="deliveryCountry">Country *</label>
+
+              <input
+                id="deliveryCountry"
+                type="text"
+                name="deliveryCountry"
+                [(ngModel)]="deliveryCountry"
+                required
+                maxlength="100"
+                placeholder="Enter your country"
+              />
+            </div>
+
+            <div class="checkout-field">
+              <label for="deliveryPostalCode">Postal Code *</label>
+
+              <input
+                id="deliveryPostalCode"
+                type="text"
+                name="deliveryPostalCode"
+                [(ngModel)]="deliveryPostalCode"
+                required
+                maxlength="20"
+                placeholder="Enter your postal code"
+              />
             </div>
 
           </div>
 
           <!-- Payment method -->
           <div class="payment-method">
-
             <strong>Payment Method</strong>
 
             <div class="cod-option">
-
               <span>💵</span>
 
               <div>
                 <strong>Cash on Delivery</strong>
                 <p>Pay when your order is delivered.</p>
               </div>
-
             </div>
-
           </div>
 
           <!-- Checkout error -->
@@ -249,7 +302,6 @@
           </button>
 
         </form>
-
       </section>
 
       <!-- Order success -->

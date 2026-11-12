@@ -150,6 +150,11 @@ export interface CreateOrderRequest {
   customerName: string;
   customerEmail: string;
   customerPhone: string | null;
+  deliveryAddress: string;
+  deliveryCity: string;
+  deliveryState: string;
+  deliveryCountry: string;
+  deliveryPostalCode: string;
   items: CreateOrderItemRequest[];
 }
 
@@ -167,6 +172,11 @@ export interface Order {
   customerName: string;
   customerEmail: string;
   customerPhone: string | null;
+  deliveryAddress: string;
+  deliveryCity: string;
+  deliveryState: string;
+  deliveryCountry: string;
+  deliveryPostalCode: string;
   orderDateUtc: string;
   status: string;
   subtotal: number;
@@ -295,7 +305,7 @@ export class ProductService {
     );
   }
 
-  // Orders
+  // Orders - Admin
   getOrders(
     pageNumber = 1,
     pageSize = 10,
@@ -332,6 +342,27 @@ export class ProductService {
     return this.http.put<CancelOrderResponse>(
       `${API_URL}/Orders/${id}/cancel`,
       {}
+    );
+  }
+
+  // Orders - Customer
+  getMyOrders(
+    pageNumber = 1,
+    pageSize = 10
+  ): Observable<OrderPage> {
+    const params = new HttpParams()
+      .set('pageNumber', pageNumber)
+      .set('pageSize', pageSize);
+
+    return this.http.get<OrderPage>(
+      `${API_URL}/Orders/my-orders`,
+      { params }
+    );
+  }
+
+  getMyOrderById(id: number): Observable<Order> {
+    return this.http.get<Order>(
+      `${API_URL}/Orders/my-orders/${id}`
     );
   }
 }

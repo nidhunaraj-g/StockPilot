@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using StockPilot.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StockPilot.Infrastructure.Persistence.Configuration
 {
@@ -48,6 +43,26 @@ namespace StockPilot.Infrastructure.Persistence.Configuration
             builder.Property(o => o.CustomerPhone)
                 .HasMaxLength(20);
 
+            builder.Property(o => o.DeliveryAddress)
+                .HasMaxLength(300)
+                .IsRequired();
+
+            builder.Property(o => o.DeliveryCity)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            builder.Property(o => o.DeliveryState)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            builder.Property(o => o.DeliveryCountry)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            builder.Property(o => o.DeliveryPostalCode)
+                .HasMaxLength(20)
+                .IsRequired();
+
             builder.Property(o => o.Status)
                 .HasMaxLength(30)
                 .IsRequired();
@@ -64,13 +79,19 @@ namespace StockPilot.Infrastructure.Persistence.Configuration
             builder.Property(o => o.TotalAmount)
                 .HasPrecision(18, 2);
 
+            builder.HasOne(o => o.Customer)
+                .WithMany(c => c.Orders)
+                .HasForeignKey(o => o.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(o => o.CustomerId);
+            builder.HasIndex(o => o.OrderDateUtc);
+            builder.HasIndex(o => o.Status);
+
             builder.HasMany(o => o.Items)
                 .WithOne(i => i.Order)
                 .HasForeignKey(i => i.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasIndex(o => o.OrderDateUtc);
-            builder.HasIndex(o => o.Status);
         }
     }
 }

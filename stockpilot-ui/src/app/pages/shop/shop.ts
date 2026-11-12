@@ -59,9 +59,6 @@ export class Shop implements OnInit {
   totalCount = 0;
   totalPages = 0;
 
-  selectedProduct: Product | null = null;
-  selectedProductImageUrl: string | null = null;
-
   productSelectedImages: { [productId: number]: string } = {};
 
   ngOnInit(): void {
@@ -118,6 +115,7 @@ export class Shop implements OnInit {
         this.isLoading = false;
         this.cdr.detectChanges();
       },
+
       error: error => {
         console.error('Shop products loading error:', error);
 
@@ -140,6 +138,7 @@ export class Shop implements OnInit {
 
         this.cdr.detectChanges();
       },
+
       error: error => {
         console.error('Categories loading error:', error);
       }
@@ -207,21 +206,7 @@ export class Shop implements OnInit {
   }
 
   openProductDetails(product: Product): void {
-    this.selectedProduct = product;
-
-    const images = this.getProductImages(product);
-
-    this.selectedProductImageUrl =
-      images.length > 0 ? images[0].imageUrl : null;
-  }
-
-  selectModalImage(imageUrl: string): void {
-    this.selectedProductImageUrl = imageUrl;
-  }
-
-  closeProductDetails(): void {
-    this.selectedProduct = null;
-    this.selectedProductImageUrl = null;
+    this.router.navigate(['/product-details', product.id]);
   }
 
   isOutOfStock(product: Product): boolean {

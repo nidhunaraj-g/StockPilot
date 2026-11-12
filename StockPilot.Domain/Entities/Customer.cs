@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StockPilot.Domain.Entities
 {
@@ -21,9 +18,9 @@ namespace StockPilot.Domain.Entities
         public string Country { get; set; } = string.Empty;
         public string PostalCode { get; set; } = string.Empty;
 
-        // Account deactivation details
+        public ICollection<Order> Orders { get; set; } = [];
+
         public DateTime? DeactivatedAtUtc { get; set; }
         public bool IsAdminDeactivated { get; set; } = false;
     }
 }
-

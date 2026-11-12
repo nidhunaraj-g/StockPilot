@@ -4,24 +4,19 @@ using StockPilot.Application.Common.Interfaces;
 using StockPilot.Application.Features.Products.DTOs;
 using StockPilot.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StockPilot.Application.Features.Products.Queries
 {
     public record GetAllProductsQuery(
-    int PageNumber = 1,
-    int PageSize = 10,
-    string? Search = null,
-    int? CategoryId = null,
-    int? BrandId = null,
-    bool? LowStockOnly = null,
-    string? SortBy = "Name",
-    bool SortDescending = false)
-    : IRequest<ProductListResponse>;
+        int PageNumber = 1,
+        int PageSize = 10,
+        string? Search = null,
+        int? CategoryId = null,
+        int? BrandId = null,
+        bool? LowStockOnly = null,
+        string? SortBy = "Name",
+        bool SortDescending = false)
+        : IRequest<ProductListResponse>;
 
     public class ProductListResponse
     {
@@ -34,7 +29,7 @@ namespace StockPilot.Application.Features.Products.Queries
 
     public class GetAllProductsQueryHandler(
         IGenericRepository<Product> productRepository,
-        AutoMapper.IMapper mapper)
+        IMapper mapper)
         : IRequestHandler<GetAllProductsQuery, ProductListResponse>
     {
         public async Task<ProductListResponse> Handle(
@@ -138,10 +133,11 @@ namespace StockPilot.Application.Features.Products.Queries
                     "SortBy must be Name, Price, or Stock.")
             };
 
-            // Apply pagination in SQL Server
+            // Load products with Category, Brand, and Images
             var products = await productsQuery
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
+                .Include(p => p.Images)
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync(cancellationToken);

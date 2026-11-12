@@ -1,0 +1,272 @@
+
+<div class="details-page">
+
+  <!-- Header -->
+  <header class="details-header">
+
+    <a class="brand" routerLink="/shop">
+      <span class="brand-icon">📦</span>
+      <span>StockPilot</span>
+    </a>
+
+    <nav class="header-actions">
+
+      <a routerLink="/shop" class="header-link">
+        Shop
+      </a>
+
+      <a routerLink="/cart" class="cart-link">
+        🛒 My Cart
+
+        <span class="cart-count" *ngIf="cartCount > 0">
+          {{ cartCount }}
+        </span>
+      </a>
+
+    </nav>
+
+  </header>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a routerLink="/shop">Shop</a>
+    <span>›</span>
+    <span>Product Details</span>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+
+    <div class="loading-spinner"></div>
+
+    <h3>Loading Product Details...</h3>
+
+    <p>Please wait while we load the product information.</p>
+
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!isLoading && errorMessage" class="error-container">
+
+    <div class="error-icon">!</div>
+
+    <h2>Product Not Available</h2>
+
+    <p>{{ errorMessage }}</p>
+
+    <a routerLink="/shop" class="back-button">
+      Back to Shop
+    </a>
+
+  </div>
+
+  <!-- Product Details -->
+  <main
+    class="details-container"
+    *ngIf="!isLoading && product">
+
+    <!-- Success Message -->
+    <div
+      *ngIf="successMessage"
+      class="success-message"
+      role="status"
+      aria-live="polite">
+
+      <span>✓</span>
+
+      {{ successMessage }}
+
+      <button type="button" (click)="goToCart()">
+        View Cart
+      </button>
+
+    </div>
+
+    <div class="product-layout">
+
+      <!-- Product Images -->
+      <section class="image-section">
+
+        <div class="main-image">
+
+          <img
+            *ngIf="selectedImageUrl"
+            [src]="selectedImageUrl"
+            [alt]="product.name">
+
+          <div
+            class="no-image"
+            *ngIf="!selectedImageUrl">
+
+            <span>📦</span>
+            <p>No Image Available</p>
+
+          </div>
+
+          <span
+            class="stock-label"
+            *ngIf="!isStockUnknown(product) && !isOutOfStock(product)">
+            In Stock
+          </span>
+
+          <span
+            class="stock-label out-of-stock"
+            *ngIf="isOutOfStock(product)">
+            Out of Stock
+          </span>
+
+          <span
+            class="stock-label stock-unknown"
+            *ngIf="isStockUnknown(product)">
+            Stock Unavailable
+          </span>
+
+        </div>
+
+        <!-- Thumbnails -->
+        <div
+          class="thumbnail-list"
+          *ngIf="getProductImages(product).length > 0">
+
+          <button
+            type="button"
+            class="thumbnail-button"
+            *ngFor="let image of getProductImages(product)"
+            [class.selected]="selectedImageUrl === image.imageUrl"
+            (click)="selectImage(image.imageUrl)">
+
+            <img
+              [src]="image.imageUrl"
+              [alt]="image.altText || product.name">
+
+          </button>
+
+        </div>
+
+      </section>
+
+      <!-- Product Information -->
+      <section class="information-section">
+
+        <span class="category-label">
+          {{ product.categoryName }}
+        </span>
+
+        <h1>{{ product.name }}</h1>
+
+        <p class="brand-name" *ngIf="product.brandName">
+          Brand: {{ product.brandName }}
+        </p>
+
+        <div class="product-price">
+          {{ product.sellingPrice | currency:'INR':'symbol':'1.2-2' }}
+        </div>
+
+        <div class="divider"></div>
+
+        <h3>Product Description</h3>
+
+        <p class="description">
+          {{ product.description || 'No description available.' }}
+        </p>
+
+        <!-- Product Information -->
+        <div class="product-meta">
+
+          <div class="meta-item">
+            <span>SKU</span>
+            <strong>{{ product.sku }}</strong>
+          </div>
+
+          <div class="meta-item" *ngIf="product.barcode">
+            <span>Barcode</span>
+            <strong>{{ product.barcode }}</strong>
+          </div>
+
+          <div class="meta-item">
+            <span>Category</span>
+            <strong>{{ product.categoryName }}</strong>
+          </div>
+
+          <div class="meta-item" *ngIf="product.brandName">
+            <span>Brand</span>
+            <strong>{{ product.brandName }}</strong>
+          </div>
+
+        </div>
+
+        <!-- Stock Availability -->
+        <div class="availability-box">
+
+          <span class="availability-dot"
+            [class.unavailable-dot]="isOutOfStock(product) || isStockUnknown(product)">
+          </span>
+
+          <div>
+
+            <strong *ngIf="isStockUnknown(product)">
+              Stock availability unavailable
+            </strong>
+
+            <strong *ngIf="isOutOfStock(product)">
+              Currently out of stock
+            </strong>
+
+            <strong
+              *ngIf="!isStockUnknown(product) && !isOutOfStock(product)">
+              {{ product.stockQuantity }} units available
+            </strong>
+
+            <p>Availability may change when you place an order.</p>
+
+          </div>
+
+        </div>
+
+        <!-- Actions -->
+        <div class="product-actions">
+
+          <button
+            type="button"
+            class="add-cart-button"
+            [disabled]="!canAddProduct(product)"
+            (click)="addToCart(product)">
+
+            {{ canAddProduct(product) ? 'Add to Cart' : 'Unavailable' }}
+
+          </button>
+
+          <button
+            type="button"
+            class="buy-button"
+            [disabled]="!canAddProduct(product)"
+            (click)="addToCart(product)">
+
+            Add & Continue Shopping
+          </button>
+
+        </div>
+
+        <a routerLink="/shop" class="continue-link">
+          ← Continue Shopping
+        </a>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="details-footer">
+
+    <div>
+      <h3>StockPilot</h3>
+      <p>Your simple and reliable shopping experience.</p>
+    </div>
+
+    <p>© StockPilot. All rights reserved.</p>
+
+  </footer>
+
+</div>

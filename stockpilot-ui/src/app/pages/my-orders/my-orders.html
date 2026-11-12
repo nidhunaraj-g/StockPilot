@@ -1,0 +1,145 @@
+
+<div class="orders-page">
+
+  <div class="page-header">
+    <div>
+      <h1>My Orders</h1>
+      <p>View and track your purchases</p>
+    </div>
+
+    <a routerLink="/shop" class="shop-button">
+      Continue Shopping
+    </a>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    Loading your orders...
+  </div>
+
+  <div *ngIf="errorMessage && !isLoading" class="error-message">
+    {{ errorMessage }}
+
+    <button (click)="loadOrders()">
+      Try Again
+    </button>
+  </div>
+
+  <div
+    *ngIf="!isLoading && !errorMessage && orders.length === 0"
+    class="empty-orders">
+
+    <div class="empty-icon">📦</div>
+
+    <h2>No orders yet</h2>
+
+    <p>You haven't placed any orders yet.</p>
+
+    <a routerLink="/shop" class="shop-button">
+      Start Shopping
+    </a>
+
+  </div>
+
+  <div *ngIf="!isLoading && orders.length > 0" class="orders-content">
+
+    <div class="orders-summary">
+      <div>
+        <span>Total Orders</span>
+        <h2>{{ totalCount }}</h2>
+      </div>
+    </div>
+
+    <div class="order-list">
+
+      <div class="order-card" *ngFor="let order of orders">
+
+        <div class="order-top">
+
+          <div>
+            <span class="order-label">Order Number</span>
+            <h3>{{ order.orderNumber }}</h3>
+          </div>
+
+          <span
+            class="status"
+            [ngClass]="getStatusClass(order.status)">
+            {{ order.status }}
+          </span>
+
+        </div>
+
+        <div class="order-details">
+
+          <div class="detail-item">
+            <span>Order Date</span>
+            <strong>
+              {{ order.orderDateUtc | date:'dd MMM yyyy' }}
+            </strong>
+          </div>
+
+          <div class="detail-item">
+            <span>Items</span>
+            <strong>{{ order.items.length }}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span>Total Amount</span>
+            <strong class="amount">
+              {{ order.totalAmount | currency:'INR':'symbol':'1.2-2' }}
+            </strong>
+          </div>
+
+        </div>
+
+        <div class="order-products">
+          <h4>Products</h4>
+
+          <div class="product-row" *ngFor="let item of order.items">
+            <span>{{ item.productName }}</span>
+            <span>Qty: {{ item.quantity }}</span>
+            <strong>
+              {{ item.subtotal | currency:'INR':'symbol':'1.2-2' }}
+            </strong>
+          </div>
+
+        </div>
+
+        <div class="delivery-details">
+          <h4>Delivery Address</h4>
+
+          <p>
+            {{ order.deliveryAddress }},
+            {{ order.deliveryCity }},
+            {{ order.deliveryState }},
+            {{ order.deliveryCountry }} -
+            {{ order.deliveryPostalCode }}
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+
+      <button
+        (click)="previousPage()"
+        [disabled]="pageNumber <= 1">
+        Previous
+      </button>
+
+      <span>
+        Page {{ pageNumber }} of {{ totalPages }}
+      </span>
+
+      <button
+        (click)="nextPage()"
+        [disabled]="pageNumber >= totalPages">
+        Next
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

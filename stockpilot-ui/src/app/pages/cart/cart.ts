@@ -39,6 +39,12 @@ export class Cart {
   customerEmail = '';
   customerPhone = '';
 
+  deliveryAddress = '';
+  deliveryCity = '';
+  deliveryState = '';
+  deliveryCountry = 'India';
+  deliveryPostalCode = '';
+
   isSubmittingOrder = false;
   checkoutError = '';
   checkoutSuccess = '';
@@ -88,6 +94,51 @@ export class Cart {
       return;
     }
 
+    if (!this.deliveryAddress.trim()) {
+      this.checkoutError = 'Please enter your delivery address.';
+      return;
+    }
+
+    if (!this.deliveryCity.trim()) {
+      this.checkoutError = 'Please enter your delivery city.';
+      return;
+    }
+
+    if (!this.deliveryState.trim()) {
+      this.checkoutError = 'Please enter your delivery state.';
+      return;
+    }
+
+    if (!this.deliveryCountry.trim()) {
+      this.checkoutError = 'Please enter your delivery country.';
+      return;
+    }
+
+    if (!this.deliveryPostalCode.trim()) {
+      this.checkoutError = 'Please enter your postal code.';
+      return;
+    }
+
+    if (this.deliveryAddress.trim().length > 300) {
+      this.checkoutError = 'Delivery address cannot exceed 300 characters.';
+      return;
+    }
+
+    if (
+      this.deliveryCity.trim().length > 100 ||
+      this.deliveryState.trim().length > 100 ||
+      this.deliveryCountry.trim().length > 100
+    ) {
+      this.checkoutError =
+        'City, state and country cannot exceed 100 characters.';
+      return;
+    }
+
+    if (this.deliveryPostalCode.trim().length > 20) {
+      this.checkoutError = 'Postal code cannot exceed 20 characters.';
+      return;
+    }
+
     for (const item of cartItems) {
       const stock = item.product.stockQuantity;
 
@@ -108,6 +159,13 @@ export class Cart {
       customerName: this.customerName.trim(),
       customerEmail: this.customerEmail.trim(),
       customerPhone: this.customerPhone.trim() || null,
+
+      deliveryAddress: this.deliveryAddress.trim(),
+      deliveryCity: this.deliveryCity.trim(),
+      deliveryState: this.deliveryState.trim(),
+      deliveryCountry: this.deliveryCountry.trim(),
+      deliveryPostalCode: this.deliveryPostalCode.trim(),
+
       items: cartItems.map(item => ({
         productId: item.product.id,
         quantity: item.quantity
@@ -128,6 +186,12 @@ export class Cart {
         this.customerName = '';
         this.customerEmail = '';
         this.customerPhone = '';
+
+        this.deliveryAddress = '';
+        this.deliveryCity = '';
+        this.deliveryState = '';
+        this.deliveryCountry = 'India';
+        this.deliveryPostalCode = '';
 
         this.isSubmittingOrder = false;
         this.cdr.detectChanges();

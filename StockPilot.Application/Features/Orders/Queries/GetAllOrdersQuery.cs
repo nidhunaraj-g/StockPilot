@@ -6,17 +6,17 @@ using StockPilot.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StockPilot.Application.Features.Orders.Queries
 {
     public record GetAllOrdersQuery(
-    int PageNumber = 1,
-    int PageSize = 10,
-    string? Search = null,
-    string? Status = null
-) : IRequest<OrderListResponse>;
+        int PageNumber = 1,
+        int PageSize = 10,
+        string? Search = null,
+        string? Status = null
+    ) : IRequest<OrderListResponse>;
 
     public class OrderListResponse
     {
@@ -27,10 +27,13 @@ namespace StockPilot.Application.Features.Orders.Queries
         public int TotalPages { get; set; }
     }
 
-    public class GetAllOrdersQueryHandler(IGenericRepository<Order> orderRepository) 
+    public class GetAllOrdersQueryHandler(
+        IGenericRepository<Order> orderRepository)
         : IRequestHandler<GetAllOrdersQuery, OrderListResponse>
     {
-        public async Task<OrderListResponse> Handle(GetAllOrdersQuery query,CancellationToken cancellationToken)
+        public async Task<OrderListResponse> Handle(
+            GetAllOrdersQuery query,
+            CancellationToken cancellationToken)
         {
             if (query.PageNumber < 1)
                 throw new ArgumentException("Page number must be at least 1.");
@@ -77,6 +80,13 @@ namespace StockPilot.Application.Features.Orders.Queries
                 CustomerName = order.CustomerName,
                 CustomerEmail = order.CustomerEmail,
                 CustomerPhone = order.CustomerPhone,
+
+                DeliveryAddress = order.DeliveryAddress,
+                DeliveryCity = order.DeliveryCity,
+                DeliveryState = order.DeliveryState,
+                DeliveryCountry = order.DeliveryCountry,
+                DeliveryPostalCode = order.DeliveryPostalCode,
+
                 OrderDateUtc = order.OrderDateUtc,
                 Status = order.Status,
                 Subtotal = order.Subtotal,

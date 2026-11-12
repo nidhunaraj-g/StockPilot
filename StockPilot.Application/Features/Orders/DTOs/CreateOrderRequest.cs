@@ -12,6 +12,12 @@ namespace StockPilot.Application.Features.Orders.DTOs
         public string CustomerEmail { get; set; } = string.Empty;
         public string? CustomerPhone { get; set; }
 
+        public string DeliveryAddress { get; set; } = string.Empty;
+        public string DeliveryCity { get; set; } = string.Empty;
+        public string DeliveryState { get; set; } = string.Empty;
+        public string DeliveryCountry { get; set; } = string.Empty;
+        public string DeliveryPostalCode { get; set; } = string.Empty;
+
         public List<CreateOrderItemRequest> Items { get; set; } = [];
     }
 }

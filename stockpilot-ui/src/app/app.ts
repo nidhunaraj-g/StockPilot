@@ -43,14 +43,24 @@ export class App {
     return (
       url === '/shop' ||
       url.startsWith('/shop/') ||
+
+      url === '/product-details' ||
+      url.startsWith('/product-details/') ||
+
       url === '/cart' ||
       url.startsWith('/cart/') ||
+
       url === '/login' ||
       url.startsWith('/login/') ||
+
       url === '/register' ||
       url.startsWith('/register/') ||
+
       url === '/profile' ||
-      url.startsWith('/profile/')
+      url.startsWith('/profile/') ||
+
+      url === '/my-orders' ||
+      url.startsWith('/my-orders/')
     );
   }
 }

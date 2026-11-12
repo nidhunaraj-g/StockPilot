@@ -1,7 +1,6 @@
-
 <div class="shop-page">
 
-  <!-- Customer navigation -->
+  <!-- Customer Navigation -->
   <header class="shop-header">
 
     <a class="shop-brand" routerLink="/shop">
@@ -9,18 +8,27 @@
       <span>StockPilot</span>
     </a>
 
+    <!-- Navigation -->
     <nav class="shop-nav">
+
       <a
         routerLink="/shop"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         Shop
       </a>
+
+      <a *ngIf="isCustomerLoggedIn"routerLink="/my-orders"routerLinkActive="active"class="my-orders-link">
+
+        <span class="orders-text">My Orders</span>
+
+      </a>
+
     </nav>
 
     <div class="shop-header-actions">
 
-      <!-- Show Login and Register when customer is logged out -->
+      <!-- Login and Register -->
       <ng-container *ngIf="!isCustomerLoggedIn">
 
         <a class="auth-login-link" routerLink="/login">
@@ -33,13 +41,12 @@
 
       </ng-container>
 
-      <!-- Show customer name and Logout after login -->
+      <!-- Logged-in Customer -->
       <ng-container *ngIf="isCustomerLoggedIn">
 
         <span class="customer-welcome">
           Hi, {{ currentCustomer?.firstName }}
         </span>
-
 
         <button
           type="button"
@@ -50,9 +57,14 @@
 
       </ng-container>
 
-    <!--Customer icon-->
-      <a routerLink="/profile" class="profile-icon-link" title="My Profile">
+      <!-- Customer Profile -->
+      <a
+        routerLink="/profile"
+        class="profile-icon-link"
+        title="My Profile">
+
         <span class="profile-avatar">
+
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="23"
@@ -62,42 +74,58 @@
             stroke="currentColor"
             stroke-width="1.8"
             stroke-linecap="round"
-            stroke-linejoin="round"
-          >
+            stroke-linejoin="round">
+
             <circle cx="12" cy="8" r="4"></circle>
             <path d="M5 21v-2a7 7 0 0 1 14 0v2"></path>
+
           </svg>
+
         </span>
+
         <span class="profile-icon-label">My Profile</span>
+
       </a>
 
       <!-- Cart -->
       <a class="cart-link" routerLink="/cart">
+
         🛒
         <span>My Cart</span>
 
         <span class="cart-count" *ngIf="cartCount > 0">
           {{ cartCount }}
         </span>
+
       </a>
 
     </div>
 
   </header>
 
-  <!-- Welcome section -->
+  <!-- Welcome Section -->
   <section class="shop-hero">
+
     <div class="hero-content">
-      <span class="hero-label">WELCOME TO STOCKPILOT</span>
+
+      <span class="hero-label">
+        WELCOME TO STOCKPILOT
+      </span>
+
       <h1>Find the products you need.</h1>
-      <p>Explore our collection and shop your favourite products.</p>
+
+      <p>
+        Explore our collection and shop your favourite products.
+      </p>
+
     </div>
+
   </section>
 
-  <!-- Main shop content -->
+  <!-- Main Shop Content -->
   <main class="shop-content">
 
-    <!-- Search and filters -->
+    <!-- Search and Filters -->
     <section class="shop-toolbar">
 
       <div class="shop-heading">
@@ -108,6 +136,7 @@
       <div class="shop-filters">
 
         <div class="search-box">
+
           <input
             type="text"
             placeholder="Search products..."
@@ -126,6 +155,7 @@
             (click)="clearSearch()">
             Clear
           </button>
+
         </div>
 
         <select
@@ -143,12 +173,15 @@
         </select>
 
       </div>
+
     </section>
 
     <!-- Loading -->
     <div class="loading-container" *ngIf="isLoading">
+
       <div class="loading-spinner"></div>
       <p>Loading products...</p>
+
     </div>
 
     <!-- Error -->
@@ -165,7 +198,7 @@
         class="product-card"
         *ngFor="let product of filteredProducts">
 
-        <!-- Product image -->
+        <!-- Product Image -->
         <div class="product-image">
 
           <img
@@ -179,21 +212,21 @@
             No Image Available
           </div>
 
-          <!-- In stock -->
+          <!-- In Stock -->
           <span
             class="stock-label"
             *ngIf="!isStockUnknown(product) && !isOutOfStock(product)">
             In Stock
           </span>
 
-          <!-- Out of stock -->
+          <!-- Out of Stock -->
           <span
             class="stock-label out-of-stock"
             *ngIf="isOutOfStock(product)">
             Out of Stock
           </span>
 
-          <!-- Stock unavailable -->
+          <!-- Stock Unavailable -->
           <span
             class="stock-label stock-unknown"
             *ngIf="isStockUnknown(product)">
@@ -202,7 +235,7 @@
 
         </div>
 
-        <!-- Product thumbnails -->
+        <!-- Product Thumbnails -->
         <div
           class="product-thumbnails"
           *ngIf="getProductImages(product).length > 0">
@@ -222,7 +255,7 @@
 
         </div>
 
-        <!-- Product information -->
+        <!-- Product Information -->
         <div class="product-info">
 
           <div class="product-category">
@@ -245,7 +278,7 @@
             {{ product.sellingPrice | currency:'INR':'symbol':'1.2-2' }}
           </div>
 
-          <!-- Stock quantity -->
+          <!-- Stock Quantity -->
           <p
             class="availability-text"
             *ngIf="isStockUnknown(product)">
@@ -264,7 +297,7 @@
             Currently unavailable
           </p>
 
-          <!-- Product actions -->
+          <!-- Product Actions -->
           <div class="product-actions">
 
             <button
@@ -272,9 +305,7 @@
               class="add-cart-button"
               [disabled]="!canAddProduct(product)"
               (click)="addToCart(product)">
-
               {{ canAddProduct(product) ? 'Add to Cart' : 'Unavailable' }}
-
             </button>
 
             <button
@@ -292,10 +323,13 @@
 
     </section>
 
-    <!-- No products -->
+    <!-- No Products -->
     <div
       class="empty-products"
-      *ngIf="!isLoading && !errorMessage && filteredProducts.length === 0">
+      *ngIf="
+        !isLoading &&
+        !errorMessage &&
+        filteredProducts.length === 0">
 
       <h3>No products found</h3>
       <p>Try changing your search or category filter.</p>
@@ -330,123 +364,6 @@
     </div>
 
   </main>
-
-  <!-- Product details modal -->
-  <div
-    class="modal-backdrop"
-    *ngIf="selectedProduct"
-    (click)="closeProductDetails()">
-
-    <section
-      class="product-modal"
-      (click)="$event.stopPropagation()">
-
-      <button
-        type="button"
-        class="modal-close"
-        (click)="closeProductDetails()">
-        ×
-      </button>
-
-      <div class="modal-content">
-
-        <!-- Product images -->
-        <div class="modal-images">
-
-          <div class="main-product-image">
-
-            <img
-              *ngIf="selectedProductImageUrl"
-              [src]="selectedProductImageUrl"
-              [alt]="selectedProduct.name">
-
-            <div *ngIf="!selectedProductImageUrl">
-              No Image Available
-            </div>
-
-          </div>
-
-          <!-- Modal thumbnails -->
-          <div
-            class="thumbnail-list"
-            *ngIf="getProductImages(selectedProduct).length > 0">
-
-            <button
-              type="button"
-              class="thumbnail-button"
-              *ngFor="let image of getProductImages(selectedProduct)"
-              [class.selected]="selectedProductImageUrl === image.imageUrl"
-              (click)="selectModalImage(image.imageUrl)">
-
-              <img
-                [src]="image.imageUrl"
-                [alt]="image.altText || selectedProduct.name">
-
-            </button>
-
-          </div>
-
-        </div>
-
-        <!-- Product details -->
-        <div class="modal-product-info">
-
-          <span class="product-category">
-            {{ selectedProduct.categoryName }}
-          </span>
-
-          <h2>{{ selectedProduct.name }}</h2>
-
-          <p
-            class="product-brand"
-            *ngIf="selectedProduct.brandName">
-            Brand: {{ selectedProduct.brandName }}
-          </p>
-
-          <p class="modal-description">
-            {{ selectedProduct.description || 'No description available.' }}
-          </p>
-
-          <div class="modal-price">
-            {{ selectedProduct.sellingPrice | currency:'INR':'symbol':'1.2-2' }}
-          </div>
-
-          <!-- Modal stock status -->
-          <p
-            class="availability-text"
-            *ngIf="isStockUnknown(selectedProduct)">
-            Stock availability unavailable
-          </p>
-
-          <p
-            class="availability-text"
-            *ngIf="!isStockUnknown(selectedProduct) && !isOutOfStock(selectedProduct)">
-            {{ selectedProduct.stockQuantity }} units available
-          </p>
-
-          <p
-            class="availability-text unavailable"
-            *ngIf="isOutOfStock(selectedProduct)">
-            Currently unavailable
-          </p>
-
-          <button
-            type="button"
-            class="add-cart-button modal-add-button"
-            [disabled]="!canAddProduct(selectedProduct)"
-            (click)="addToCart(selectedProduct)">
-
-            {{ canAddProduct(selectedProduct) ? 'Add to Cart' : 'Unavailable' }}
-
-          </button>
-
-        </div>
-
-      </div>
-
-    </section>
-
-  </div>
 
   <!-- Footer -->
   <footer class="shop-footer">

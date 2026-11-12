@@ -2,44 +2,51 @@
 using StockPilot.Application.Common.Interfaces;
 using StockPilot.Application.Features.Orders.DTOs;
 using StockPilot.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StockPilot.Application.Features.Orders.Commands
 {
-    public record CreateOrderCommand(
-    CreateOrderRequest Request
-) : IRequest<OrderResponse>;
+    public record CreateOrderCommand(int CustomerId,CreateOrderRequest Request) : IRequest<OrderResponse>;
 
     public class CreateOrderCommandHandler(
         IGenericRepository<Order> orderRepository,
+        IGenericRepository<Customer> customerRepository,
         IGenericRepository<Product> productRepository,
         IGenericRepository<StockMovement> stockMovementRepository
     ) : IRequestHandler<CreateOrderCommand, OrderResponse>
     {
-        public async Task<OrderResponse> Handle(
-            CreateOrderCommand command,
-            CancellationToken cancellationToken)
+        public async Task<OrderResponse> Handle(CreateOrderCommand command,CancellationToken cancellationToken)
         {
             var request = command.Request;
 
-            if (string.IsNullOrWhiteSpace(request.CustomerName))
-                throw new ArgumentException("Customer name is required.");
+            if (command.CustomerId <= 0)
+                throw new ArgumentException("Invalid customer.");
 
-            if (request.CustomerName.Length > 150)
-                throw new ArgumentException("Customer name cannot exceed 150 characters.");
+            var customer = await customerRepository.GetByIdAsync(command.CustomerId,cancellationToken);
 
-            if (string.IsNullOrWhiteSpace(request.CustomerEmail))
-                throw new ArgumentException("Customer email is required.");
+            if (customer is null || !customer.IsActive)
+                throw new KeyNotFoundException("Active customer was not found.");
 
-            if (request.CustomerEmail.Length > 254)
-                throw new ArgumentException("Customer email cannot exceed 254 characters.");
+            if (string.IsNullOrWhiteSpace(request.DeliveryAddress))
+                throw new ArgumentException("Delivery address is required.");
 
-            if (request.CustomerPhone?.Length > 20)
-                throw new ArgumentException("Customer phone cannot exceed 20 characters.");
+            if (request.DeliveryAddress.Length > 300)
+                throw new ArgumentException("Delivery address cannot exceed 300 characters.");
+
+            if (string.IsNullOrWhiteSpace(request.DeliveryCity) ||
+                request.DeliveryCity.Length > 100)
+                throw new ArgumentException("A valid delivery city is required (maximum 100 characters).");
+
+            if (string.IsNullOrWhiteSpace(request.DeliveryState) ||
+                request.DeliveryState.Length > 100)
+                throw new ArgumentException("A valid delivery state is required (maximum 100 characters).");
+
+            if (string.IsNullOrWhiteSpace(request.DeliveryCountry) ||
+                request.DeliveryCountry.Length > 100)
+                throw new ArgumentException("A valid delivery country is required (maximum 100 characters).");
+
+            if (string.IsNullOrWhiteSpace(request.DeliveryPostalCode) ||
+                request.DeliveryPostalCode.Length > 20)
+                throw new ArgumentException("A valid delivery postal code is required (maximum 20 characters).");
 
             if (request.Items is null || request.Items.Count == 0)
                 throw new ArgumentException("An order must contain at least one item.");
@@ -92,18 +99,29 @@ namespace StockPilot.Application.Features.Orders.Commands
                 });
             }
 
-            // This initial version does not apply tax.
             decimal taxAmount = 0;
             decimal totalAmount = subtotal + taxAmount;
 
             var order = new Order
             {
+                CustomerId = customer.Id,
+
                 OrderNumber = $"ORD-{Guid.NewGuid():N}".ToUpperInvariant()[..20],
-                CustomerName = request.CustomerName.Trim(),
-                CustomerEmail = request.CustomerEmail.Trim(),
-                CustomerPhone = string.IsNullOrWhiteSpace(request.CustomerPhone)
+
+                // Customer details come from the database profile.
+                CustomerName = $"{customer.FirstName} {customer.LastName}".Trim(),
+                CustomerEmail = customer.Email,
+                CustomerPhone = string.IsNullOrWhiteSpace(customer.Phone)
                     ? null
-                    : request.CustomerPhone.Trim(),
+                    : customer.Phone,
+
+                // Save the checkout address as an order snapshot.
+                DeliveryAddress = request.DeliveryAddress.Trim(),
+                DeliveryCity = request.DeliveryCity.Trim(),
+                DeliveryState = request.DeliveryState.Trim(),
+                DeliveryCountry = request.DeliveryCountry.Trim(),
+                DeliveryPostalCode = request.DeliveryPostalCode.Trim(),
+
                 OrderDateUtc = DateTime.UtcNow,
                 Status = "Confirmed",
                 Subtotal = subtotal,
@@ -126,7 +144,7 @@ namespace StockPilot.Application.Features.Orders.Commands
                 });
             }
 
-            // Deduct stock and record the corresponding stock movements.
+            // Deduct stock and record stock movements.
             foreach (var (product, quantity) in productsToUpdate)
             {
                 product.StockQuantity -= quantity;
@@ -146,9 +164,9 @@ namespace StockPilot.Application.Features.Orders.Commands
             await orderRepository.AddAsync(order, cancellationToken);
 
             // All repositories must share the same scoped DbContext.
-            // A single SaveChanges persists these changes together.
             await orderRepository.SaveChangesAsync(cancellationToken);
 
+            // Return the complete order response.
             return new OrderResponse
             {
                 Id = order.Id,
@@ -156,6 +174,14 @@ namespace StockPilot.Application.Features.Orders.Commands
                 CustomerName = order.CustomerName,
                 CustomerEmail = order.CustomerEmail,
                 CustomerPhone = order.CustomerPhone,
+
+                DeliveryAddress = order.DeliveryAddress,
+                DeliveryCity = order.DeliveryCity,
+
+                DeliveryState = order.DeliveryState,
+                DeliveryCountry = order.DeliveryCountry,
+                DeliveryPostalCode = order.DeliveryPostalCode,
+
                 OrderDateUtc = order.OrderDateUtc,
                 Status = order.Status,
                 Subtotal = order.Subtotal,
